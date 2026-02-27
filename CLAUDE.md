@@ -41,6 +41,7 @@ He's a champion — but his shooting is a national sport in itself.
   - `IsRelay` — TRUE/FALSE
   - `NrShootings` — number of shooting stages in the race (2 or 4)
   - `Shootings` — string like "1+0+2+1" showing misses per stage
+  - `RankInt` — finish position of the athlete in that race (integer; may be NA)
   - `total_misses` — total misses in the race
   - `total_penalties` — total penalty loops in the race
   - `total_spares` — extra bullets used (relay only)

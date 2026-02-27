@@ -15,7 +15,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
   <!-- Chart.js date adapter (required for time-scale x-axis) -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
   <!-- Papa Parse via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -340,7 +339,8 @@
             <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-gray-600">Lieu</th>
             <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-gray-600">Discipline</th>
             <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-gray-600 text-right">Manqués</th>
-            <th class="pb-3 text-xs uppercase tracking-wider text-gray-600 text-right">Tours pén.</th>
+            <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-gray-600 text-right">Tours pén.</th>
+            <th class="pb-3 text-xs uppercase tracking-wider text-gray-600 text-right">Class.</th>
           </tr>
         </thead>
         <tbody id="hall-of-shame-body">
@@ -362,7 +362,7 @@
     <div class="mb-10 text-center">
       <p class="text-xs uppercase tracking-[0.3em] text-gray-600 mb-2">Duel de légendes</p>
       <h2 class="text-2xl md:text-3xl font-black text-white">Jacquelin vs Lægreid</h2>
-      <p class="text-sm text-gray-600 mt-3">Tirs manqués cumulés au fil des courses</p>
+      <p class="text-sm text-gray-600 mt-3">Balles manquées cumulées au fil des courses</p>
     </div>
 
     <!-- Chart container -->
@@ -609,6 +609,7 @@
         discipline: r.DisciplineLabel || '—',
         misses:     parseFloat(r.total_misses),
         penalties:  parseFloat(r.total_penalties) || 0,
+        rank:       r.RankInt && r.RankInt !== 'NA' ? parseInt(r.RankInt) : null,
       }))
       .sort((a, b) => b.misses - a.misses || a.date.localeCompare(b.date))
       .slice(0, 5);
@@ -633,7 +634,8 @@
         <td class="py-4 pr-6 font-bold ${isTop ? 'text-white' : 'text-gray-300'}">${r.location}</td>
         <td class="py-4 pr-6"><span class="discipline-badge">${r.discipline}</span></td>
         <td class="py-4 pr-6 text-right font-black ${isTop ? 'text-red-400 text-3xl' : 'text-red-600 text-lg'}">${r.misses}</td>
-        <td class="py-4 text-right text-sm ${isTop ? 'text-red-400 font-bold' : 'text-gray-600'}">${r.penalties}</td>
+        <td class="py-4 pr-6 text-right text-sm ${isTop ? 'text-red-400 font-bold' : 'text-gray-600'}">${r.penalties}</td>
+        <td class="py-4 text-right text-sm ${isTop ? 'text-gray-300 font-bold' : 'text-gray-500'}">${r.rank !== null ? r.rank + 'e' : '—'}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -641,17 +643,24 @@
 
   /* ── Feature 5: Cumulative Miss Comparison ────────────────────── */
   function initComparison(jacquelinRows, laegreidRows) {
-    // Build cumulative miss series: [{x: ISO-date, y: running-total}]
+    // Build cumulative miss series: [{x: cumulative shooting stages, y: cumulative misses}]
+    // Using shooting stages as x-axis gives a fairer apples-to-apples comparison —
+    // both athletes accumulate misses against the same number of opportunities.
     function cumulativePoints(rows) {
-      return [...rows]
+      let cumMisses = 0;
+      let cumStages = 0;
+      const points = [{ x: 0, y: 0 }]; // origin
+      [...rows]
         .filter(r => r.StartDate && !isNaN(parseFloat(r.total_misses)))
         .sort((a, b) => a.StartDate.localeCompare(b.StartDate))
-        .reduce((acc, r) => {
-          const prev = acc.length > 0 ? acc[acc.length - 1].y : 0;
-          const m = parseFloat(r.total_misses);
-          acc.push({ x: r.StartDate, y: prev + (isNaN(m) ? 0 : m) });
-          return acc;
-        }, []);
+        .forEach(r => {
+          const m = parseFloat(r.total_misses) || 0;
+          const s = parseInt(r.NrShootings)   || 0;
+          cumMisses += m;
+          cumStages += s;
+          points.push({ x: cumStages, y: cumMisses });
+        });
+      return points;
     }
 
     const jacData = cumulativePoints(jacquelinRows);
@@ -701,15 +710,16 @@
             },
             tooltip: {
               callbacks: {
-                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} tirs manqués`
+                title: items => `Étape ${items[0].parsed.x}`,
+                label: ctx  => ` ${ctx.dataset.label}: ${ctx.parsed.y} tirs manqués`
               }
             }
           },
           scales: {
             x: {
-              type: 'time',
-              time: { unit: 'month', displayFormats: { month: 'MMM yy' } },
-              ticks: { color: '#6b7280', maxTicksLimit: 10 },
+              type: 'linear',
+              title: { display: true, text: 'Visites sur le pas de tir', color: '#6b7280', font: { size: 11 } },
+              ticks: { color: '#6b7280', maxTicksLimit: 12 },
               grid:  { color: 'rgba(255,255,255,0.04)' }
             },
             y: {
