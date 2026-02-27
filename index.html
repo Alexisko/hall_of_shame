@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emilien Jacquelin — Hall of Misses</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- Chart.js data-labels plugin (shows values above bars) -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+  <!-- Chart.js date adapter (required for time-scale x-axis) -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+  <!-- Papa Parse via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <style>
+    /* ─── Base ─────────────────────────────────────────────────── */
+    body {
+      background-color: #0a0a0a;
+      color: #f5f5f5;
+      font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+    }
+
+    /* ─── Animated counter ──────────────────────────────────────── */
+    .counter-value {
+      font-size: clamp(6rem, 20vw, 14rem);
+      font-weight: 900;
+      line-height: 1;
+      color: #ef4444;
+      text-shadow:
+        0 0 40px rgba(239, 68, 68, 0.6),
+        0 0 80px rgba(239, 68, 68, 0.3);
+      letter-spacing: -0.02em;
+      display: inline-block;
+    }
+
+    /* Subtle flicker on the number to sell the drama */
+    @keyframes flicker {
+      0%, 95%, 100% { opacity: 1; }
+      96%            { opacity: 0.85; }
+      97%            { opacity: 1; }
+      98%            { opacity: 0.9; }
+    }
+    .counter-value { animation: flicker 6s infinite; }
+
+    /* Scanline overlay for the broadcast feel */
+    .scanlines::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+    }
+
+    /* Pulsing glow ring around the number */
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0   rgba(239, 68, 68, 0.4); }
+      70%  { box-shadow: 0 0 0 30px rgba(239, 68, 68, 0);   }
+      100% { box-shadow: 0 0 0 0   rgba(239, 68, 68, 0);    }
+    }
+    .pulse-ring { animation: pulse-ring 2.5s ease-out infinite; }
+
+    /* Distance badge */
+    .km-badge {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #0a0a0a;
+      font-weight: 900;
+      border-radius: 0.5rem;
+      padding: 0.15em 0.5em;
+      display: inline-block;
+    }
+
+    /* Tagline fade-in */
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadein 1.2s ease forwards; }
+    .fade-in-delay-1 { opacity: 0; animation: fadein 1.2s ease 0.4s forwards; }
+    .fade-in-delay-2 { opacity: 0; animation: fadein 1.2s ease 0.8s forwards; }
+    .fade-in-delay-3 { opacity: 0; animation: fadein 1.2s ease 1.2s forwards; }
+
+    /* ─── Stat cards (Feature 2) ────────────────────────────────── */
+    .stat-card {
+      background: #111111;
+      border: 1px solid #1f1f1f;
+      border-radius: 0.75rem;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    /* Worst-season card gets a faint red accent */
+    .stat-card-worst {
+      border-color: rgba(239, 68, 68, 0.25);
+      background: linear-gradient(160deg, #160a0a, #111111);
+    }
+
+    /* Big number inside a card */
+    .stat-num {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    /* Season name is text, needs a bit less size */
+    .stat-num-sm {
+      font-size: clamp(1.3rem, 3vw, 1.9rem);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    /* Sub-value below the main number (e.g. miss rate for worst season) */
+    .stat-sub {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    /* Tiny uppercase label at the bottom of each card */
+    .stat-label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    /* ─── Streak Finder (Feature 6) ────────────────────────────── */
+    .streak-num {
+      font-size: clamp(5rem, 16vw, 9rem);
+      font-weight: 900;
+      line-height: 1;
+      color: #ef4444;
+      text-shadow: 0 0 40px rgba(239,68,68,0.35);
+    }
+
+    /* ─── Hall of Shame table (Feature 4) ──────────────────────── */
+    .shame-row-top {
+      background: linear-gradient(90deg, rgba(239,68,68,0.08) 0%, transparent 60%);
+      border-left: 3px solid #ef4444;
+      border-bottom: 1px solid #2a1212;
+    }
+    .shame-row {
+      border-bottom: 1px solid #161616;
+    }
+    .discipline-badge {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.2em 0.55em;
+      border-radius: 0.25rem;
+      background: #1a1a1a;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FEATURE 1 — HERO SECTION
+     ════════════════════════════════════════════════════════════════ -->
+<section
+  id="hero"
+  class="scanlines relative min-h-screen flex flex-col items-center justify-center text-center px-6 py-20 overflow-hidden"
+>
+
+  <!-- Background noise texture via CSS gradient -->
+  <div
+    class="absolute inset-0 opacity-5"
+    style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E');
+    background-size: 200px;"
+  ></div>
+
+  <!-- Subtle red radial glow in the background -->
+  <div
+    class="absolute inset-0 pointer-events-none"
+    style="background: radial-gradient(ellipse 60% 40% at 50% 50%, rgba(239,68,68,0.08) 0%, transparent 70%);"
+  ></div>
+
+  <!-- Label above the number -->
+  <p class="fade-in text-xs uppercase tracking-[0.3em] text-gray-500 mb-4">
+    Hall of Misses — Emilien Jacquelin
+  </p>
+
+  <!-- Giant animated miss counter -->
+  <div class="relative inline-block mb-6">
+    <!-- Pulsing ring sits behind the number -->
+    <div class="pulse-ring absolute inset-0 rounded-full pointer-events-none"></div>
+    <!-- The number, counted up by JS once CSV is loaded -->
+    <span class="counter-value" id="miss-counter" aria-label="tirs manqués">0</span>
+  </div>
+
+  <!-- Subtitle -->
+  <p class="fade-in-delay-1 text-lg md:text-xl text-gray-300 max-w-xl leading-snug mb-8">
+    tirs manqués en carrière<br/>sur le circuit IBU World Cup
+  </p>
+
+  <!-- Secondary stat: distance -->
+  <div class="fade-in-delay-2 flex items-center justify-center gap-3 mb-10">
+    <div class="h-px w-12 bg-yellow-500 opacity-60"></div>
+    <p class="text-base md:text-lg text-gray-400">
+      <span id="penalty-count">…</span> tours de pénalités soit <span class="km-badge" id="km-value">…</span> parcourus sur l'anneau
+    </p>
+    <div class="h-px w-12 bg-yellow-500 opacity-60"></div>
+  </div>
+
+  <!-- Dramatic tagline -->
+  <p class="fade-in-delay-3 text-2xl md:text-3xl font-black text-white tracking-tight max-w-lg">
+    "Quand le génie rencontre<br/>la gâchette"
+  </p>
+
+  <!-- Scroll hint -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
+    <span class="text-xs uppercase tracking-widest text-gray-500">Défiler</span>
+    <svg class="w-4 h-4 text-gray-500 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+    </svg>
+  </div>
+
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FEATURE 2 — CAREER OVERVIEW STATS BAR
+     ════════════════════════════════════════════════════════════════ -->
+<section id="stats-bar" class="border-t border-[#1a1a1a] px-6 py-16">
+
+  <!-- Section header -->
+  <div class="max-w-7xl mx-auto mb-10 text-center">
+    <p class="text-xs uppercase tracking-[0.3em] text-gray-600 mb-2">Bilan de carrière</p>
+    <h2 class="text-2xl md:text-3xl font-black text-white">Les Chiffres qui Font Mal</h2>
+  </div>
+
+  <!-- Stats grid: 2 cols mobile → 3 tablet → 6 desktop -->
+  <div class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+
+    <!-- Total races -->
+    <div class="stat-card">
+      <div class="stat-num text-white" id="stat-races">—</div>
+      <div class="stat-label">Courses<br>disputées</div>
+    </div>
+
+    <!-- Total misses -->
+    <div class="stat-card">
+      <div class="stat-num text-red-500" id="stat-misses">—</div>
+      <div class="stat-label">Tirs<br>manqués</div>
+    </div>
+
+    <!-- Total penalty loops -->
+    <div class="stat-card">
+      <div class="stat-num text-red-500" id="stat-penalties">—</div>
+      <div class="stat-label">Tours de<br>pénalité</div>
+    </div>
+
+    <!-- Average misses per race -->
+    <div class="stat-card">
+      <div class="stat-num text-red-400" id="stat-avg">—</div>
+      <div class="stat-label">Tirs manqués<br>par course</div>
+    </div>
+
+    <!-- Overall miss rate -->
+    <div class="stat-card">
+      <div class="stat-num text-red-400" id="stat-miss-rate">—</div>
+      <div class="stat-label">des balles<br>manquant la cible</div>
+    </div>
+
+    <!-- Worst season by miss rate -->
+    <div class="stat-card stat-card-worst">
+      <div class="stat-num-sm text-yellow-500" id="stat-worst-season">—</div>
+      <div class="stat-sub text-red-400" id="stat-worst-rate">—</div>
+      <div class="stat-label">Pire saison<br>(% de faute)</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FEATURE 3 — MISSES PER SEASON CHART
+     ════════════════════════════════════════════════════════════════ -->
+<section id="season-chart" class="border-t border-[#1a1a1a] px-6 py-16">
+
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Section header -->
+    <div class="mb-10 text-center">
+      <p class="text-xs uppercase tracking-[0.3em] text-gray-600 mb-2">Saison par saison</p>
+      <h2 class="text-2xl md:text-3xl font-black text-white">L'Évolution du Désastre</h2>
+    </div>
+
+    <!-- Total above the chart -->
+    <p class="text-center text-sm text-gray-600 mb-6 tracking-wide">
+      <span id="season-total">—</span> tirs manqués au total
+    </p>
+
+    <!-- Chart container — extra height to give room for % labels above bars -->
+    <div style="position:relative; height:380px;">
+      <canvas id="season-chart-canvas"></canvas>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FEATURE 4 — HALL OF SHAME
+     ════════════════════════════════════════════════════════════════ -->
+<section id="hall-of-shame" class="border-t border-[#1a1a1a] px-6 py-16">
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Section header -->
+    <div class="mb-10 text-center">
+      <p class="text-xs uppercase tracking-[0.3em] text-gray-600 mb-2">Palmarès de l'horreur</p>
+      <h2 class="text-2xl md:text-3xl font-black text-white">Hall of Shame</h2>
+      <p class="text-sm text-gray-600 mt-3">Top 5 des pires performances en carrière</p>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="text-left border-b border-[#1f1f1f]">
+            <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-gray-600 w-10"></th>
+            <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-gray-600">Date</th>
+            <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-gray-600">Lieu</th>
+            <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-gray-600">Discipline</th>
+            <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-gray-600 text-right">Manqués</th>
+            <th class="pb-3 text-xs uppercase tracking-wider text-gray-600 text-right">Tours pén.</th>
+          </tr>
+        </thead>
+        <tbody id="hall-of-shame-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FEATURE 5 — ATHLETE COMPARISON
+     ════════════════════════════════════════════════════════════════ -->
+<section id="comparison" class="border-t border-[#1a1a1a] px-6 py-16">
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Section header -->
+    <div class="mb-10 text-center">
+      <p class="text-xs uppercase tracking-[0.3em] text-gray-600 mb-2">Duel de légendes</p>
+      <h2 class="text-2xl md:text-3xl font-black text-white">Jacquelin vs Lægreid</h2>
+      <p class="text-sm text-gray-600 mt-3">Tirs manqués cumulés au fil des courses</p>
+    </div>
+
+    <!-- Chart container -->
+    <div style="position:relative; height:380px;">
+      <canvas id="comparison-canvas"></canvas>
+    </div>
+
+    <!-- The quote -->
+    <blockquote class="mt-8 border-l-2 border-red-900 pl-5 py-1">
+      <p class="text-gray-400 italic text-base md:text-lg">"Om my god! I've been beaten by an unfaithful guy."</p>
+      <cite class="text-gray-600 text-xs uppercase tracking-widest not-italic">— Emilien Jacquelin</cite>
+    </blockquote>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     FEATURE 6 — MISS STREAK FINDER
+     ════════════════════════════════════════════════════════════════ -->
+<section id="streak-finder" class="border-t border-[#1a1a1a] px-6 py-16">
+  <div class="max-w-2xl mx-auto text-center">
+
+    <!-- Section header -->
+    <div class="mb-10">
+      <p class="text-xs uppercase tracking-[0.3em] text-gray-600 mb-2">La statistique de la honte</p>
+      <h2 class="text-2xl md:text-3xl font-black text-white">La Série Noire</h2>
+      <p class="text-sm text-gray-600 mt-3">Tirs consécutifs sans carton plein</p>
+    </div>
+
+    <!-- Big streak number -->
+    <div class="streak-num mb-3" id="streak-count">0</div>
+    <p class="text-gray-300 text-lg font-bold mb-2">tirs de suite sans carton plein</p>
+    <p class="text-gray-500 text-sm mb-12" id="streak-period">—</p>
+
+    <div class="h-px bg-[#1a1a1a] max-w-xs mx-auto mb-12"></div>
+
+    <!-- Current ongoing streak -->
+    <div id="current-streak-block">
+      <p class="text-xs uppercase tracking-[0.3em] text-gray-600 mb-3">Série en cours</p>
+      <div class="text-4xl font-black text-yellow-500 mb-2" id="current-streak-count">—</div>
+      <p class="text-gray-500 text-sm" id="current-streak-since">—</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SCRIPTS
+     ════════════════════════════════════════════════════════════════ -->
+<script>
+
+  /* ── Utility: convert season code to readable label ──────────────
+     "2021" → "2020-21", "2122" → "2021-22", etc.               */
+  function formatSeason(s) {
+    s = String(s).trim();
+    return '20' + s.slice(0, 2) + '-' + s.slice(2);
+  }
+
+  /* ── Animated counter: counts up to TARGET over DURATION ms ── */
+  function animateCounter(el, target, duration) {
+    const start = performance.now();
+    function tick(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease-out cubic: fast then slow
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(eased * target);
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* ── Feature 1: Hero section ───────────────────────────────────── */
+  function initHero(rows) {
+    const totalMisses = rows.reduce((sum, r) => {
+      const v = parseFloat(r.total_misses);
+      return sum + (isNaN(v) ? 0 : v);
+    }, 0);
+
+    const totalPenalties = rows.reduce((sum, r) => {
+      const v = parseFloat(r.total_penalties);
+      return sum + (isNaN(v) ? 0 : v);
+    }, 0);
+
+    const kmTotal = (totalPenalties * 150 / 1000).toFixed(2);
+
+    document.getElementById('penalty-count').textContent = totalPenalties;
+    document.getElementById('km-value').textContent = kmTotal + ' km';
+
+    const counterEl = document.getElementById('miss-counter');
+    counterEl.setAttribute('aria-label', totalMisses + ' tirs manqués');
+    // Small delay so the user sees the "0" for a beat before the drama begins
+    setTimeout(() => animateCounter(counterEl, totalMisses, 2200), 500);
+  }
+
+  /* ── Feature 2: Career Stats Bar ──────────────────────────────── */
+  function initStatsBar(rows) {
+    const totalRaces = rows.length;
+
+    const totalMisses = rows.reduce((sum, r) => {
+      const v = parseFloat(r.total_misses);
+      return sum + (isNaN(v) ? 0 : v);
+    }, 0);
+
+    const totalPenalties = rows.reduce((sum, r) => {
+      const v = parseFloat(r.total_penalties);
+      return sum + (isNaN(v) ? 0 : v);
+    }, 0);
+
+    const avgMisses = (totalMisses / totalRaces).toFixed(1);
+
+    // Total possible shots = NrShootings * 5 per race (5 targets per shooting stage)
+    const totalShots = rows.reduce((sum, r) => {
+      const v = parseFloat(r.NrShootings);
+      return sum + (isNaN(v) ? 0 : v * 5);
+    }, 0);
+
+    const missRate = ((totalMisses / totalShots) * 100).toFixed(1);
+
+    // Worst season: group by Season, find highest miss rate
+    const seasonMap = {};
+    rows.forEach(r => {
+      const s = r.Season;
+      if (!seasonMap[s]) seasonMap[s] = { misses: 0, shots: 0 };
+      const m = parseFloat(r.total_misses);
+      const n = parseFloat(r.NrShootings);
+      seasonMap[s].misses += isNaN(m) ? 0 : m;
+      seasonMap[s].shots  += isNaN(n) ? 0 : n * 5;
+    });
+
+    let worstSeason = null;
+    let worstRate   = -1;
+    Object.entries(seasonMap).forEach(([s, d]) => {
+      if (d.shots > 0) {
+        const rate = d.misses / d.shots;
+        if (rate > worstRate) { worstRate = rate; worstSeason = s; }
+      }
+    });
+
+    // Populate the DOM
+    document.getElementById('stat-races').textContent        = totalRaces;
+    document.getElementById('stat-misses').textContent       = totalMisses;
+    document.getElementById('stat-penalties').textContent    = totalPenalties;
+    document.getElementById('stat-avg').textContent          = avgMisses;
+    document.getElementById('stat-miss-rate').textContent    = missRate + '%';
+    document.getElementById('stat-worst-season').textContent = formatSeason(worstSeason);
+    document.getElementById('stat-worst-rate').textContent   = (worstRate * 100).toFixed(1) + '%';
+  }
+
+  /* ── Feature 3: Misses Per Season Chart ───────────────────────── */
+  function initSeasonChart(rows) {
+    // Aggregate misses and shots per season in chronological order
+    const seasonOrder = [];
+    const seasonData  = {};
+    rows.forEach(r => {
+      const s = r.Season;
+      if (!seasonData[s]) { seasonData[s] = { misses: 0, shots: 0 }; seasonOrder.push(s); }
+      const m = parseFloat(r.total_misses);
+      const n = parseFloat(r.NrShootings);
+      seasonData[s].misses += isNaN(m) ? 0 : m;
+      seasonData[s].shots  += isNaN(n) ? 0 : n * 5;
+    });
+
+    seasonOrder.sort((a, b) => Number(a) - Number(b));
+
+    const labels    = seasonOrder.map(formatSeason);
+    const values    = seasonOrder.map(s => seasonData[s].misses);
+    const missRates = seasonOrder.map(s => {
+      const d = seasonData[s];
+      return d.shots > 0 ? ((d.misses / d.shots) * 100).toFixed(1) + '%' : '—';
+    });
+
+    // Uniform bar color
+    const colors = values.map(() => '#b91c1c');
+
+    // Populate the total label above the chart
+    document.getElementById('season-total').textContent = values.reduce((a, b) => a + b, 0);
+
+    // Build the chart only when the section scrolls into view (first time)
+    const section = document.getElementById('season-chart');
+    const observer = new IntersectionObserver(entries => {
+      if (!entries[0].isIntersecting) return;
+      observer.disconnect(); // fire once
+
+      new Chart(document.getElementById('season-chart-canvas'), {
+        type: 'bar',
+        plugins: [ChartDataLabels],   // scoped to this chart only
+        data: {
+          labels,
+          datasets: [{
+            label: 'Tirs manqués',
+            data: values,
+            backgroundColor: colors,
+            borderColor: colors,
+            borderWidth: 0,
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: { top: 28 } },  // room for % labels
+          animation: { duration: 900, easing: 'easeOutQuart' },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.parsed.y} tirs manqués (${missRates[ctx.dataIndex]})`
+              }
+            },
+            datalabels: {
+              anchor: 'end',
+              align: 'end',
+              color: '#9ca3af',
+              font: { weight: 'bold', size: 11 },
+              formatter: (_val, ctx) => missRates[ctx.dataIndex]
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#9ca3af', font: { weight: 'bold' } },
+              grid:  { color: 'rgba(255,255,255,0.04)' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#9ca3af' },
+              grid:  { color: 'rgba(255,255,255,0.06)' }
+            }
+          }
+        }
+      });
+    }, { threshold: 0.6 });
+
+    observer.observe(section);
+  }
+
+  /* ── Feature 4: Hall of Shame — Top 5 Worst Races ─────────────── */
+  function initHallOfShame(rows) {
+    const top5 = [...rows]
+      .filter(r => !isNaN(parseFloat(r.total_misses)))
+      .map(r => ({
+        date:       r.StartDate || '',
+        location:   r.Location  || '—',
+        discipline: r.DisciplineLabel || '—',
+        misses:     parseFloat(r.total_misses),
+        penalties:  parseFloat(r.total_penalties) || 0,
+      }))
+      .sort((a, b) => b.misses - a.misses || a.date.localeCompare(b.date))
+      .slice(0, 5);
+
+    const tbody = document.getElementById('hall-of-shame-body');
+    top5.forEach((r, i) => {
+      const isTop = i === 0;
+
+      // Format date as "12 jan. 2024"
+      const dateStr = r.date
+        ? new Date(r.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
+        : '—';
+
+      const tr = document.createElement('tr');
+      tr.className = isTop ? 'shame-row-top' : 'shame-row';
+
+      tr.innerHTML = `
+        <td class="py-4 pr-6 font-black ${isTop ? 'text-yellow-500 text-2xl' : 'text-gray-600 text-sm pl-1'}">
+          ${isTop ? '🏆' : i + 1}
+        </td>
+        <td class="py-4 pr-6 text-sm ${isTop ? 'text-gray-300 font-bold' : 'text-gray-500'}">${dateStr}</td>
+        <td class="py-4 pr-6 font-bold ${isTop ? 'text-white' : 'text-gray-300'}">${r.location}</td>
+        <td class="py-4 pr-6"><span class="discipline-badge">${r.discipline}</span></td>
+        <td class="py-4 pr-6 text-right font-black ${isTop ? 'text-red-400 text-3xl' : 'text-red-600 text-lg'}">${r.misses}</td>
+        <td class="py-4 text-right text-sm ${isTop ? 'text-red-400 font-bold' : 'text-gray-600'}">${r.penalties}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* ── Feature 5: Cumulative Miss Comparison ────────────────────── */
+  function initComparison(jacquelinRows, laegreidRows) {
+    // Build cumulative miss series: [{x: ISO-date, y: running-total}]
+    function cumulativePoints(rows) {
+      return [...rows]
+        .filter(r => r.StartDate && !isNaN(parseFloat(r.total_misses)))
+        .sort((a, b) => a.StartDate.localeCompare(b.StartDate))
+        .reduce((acc, r) => {
+          const prev = acc.length > 0 ? acc[acc.length - 1].y : 0;
+          const m = parseFloat(r.total_misses);
+          acc.push({ x: r.StartDate, y: prev + (isNaN(m) ? 0 : m) });
+          return acc;
+        }, []);
+    }
+
+    const jacData = cumulativePoints(jacquelinRows);
+    const laeData = cumulativePoints(laegreidRows);
+
+    // Build chart on scroll into view
+    const section = document.getElementById('comparison');
+    const observer = new IntersectionObserver(entries => {
+      if (!entries[0].isIntersecting) return;
+      observer.disconnect();
+
+      new Chart(document.getElementById('comparison-canvas'), {
+        type: 'line',
+        data: {
+          datasets: [
+            {
+              label: 'Emilien Jacquelin',
+              data: jacData,
+              borderColor: '#ef4444',
+              backgroundColor: 'rgba(239,68,68,0.07)',
+              fill: true,
+              pointRadius: 0,
+              borderWidth: 2.5,
+              tension: 0.3,
+            },
+            {
+              label: 'Sturla Holm Lægreid',
+              data: laeData,
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59,130,246,0.07)',
+              fill: true,
+              pointRadius: 0,
+              borderWidth: 2.5,
+              tension: 0.3,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 1200, easing: 'easeOutQuart' },
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              display: true,
+              labels: { color: '#9ca3af', font: { weight: 'bold' }, boxWidth: 20 }
+            },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} tirs manqués`
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'time',
+              time: { unit: 'month', displayFormats: { month: 'MMM yy' } },
+              ticks: { color: '#6b7280', maxTicksLimit: 10 },
+              grid:  { color: 'rgba(255,255,255,0.04)' }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#9ca3af' },
+              grid:  { color: 'rgba(255,255,255,0.06)' }
+            }
+          }
+        }
+      });
+    }, { threshold: 0.4 });
+
+    observer.observe(section);
+  }
+
+  /* ── Parse CSV once — drives all features ─────────────────────── */
+  /* ══════════════════════════════════════════════════════════════
+     FEATURE 6 — MISS STREAK FINDER
+     Find the longest consecutive run of shooting stages where
+     Emilien missed at least one target (misses > 0).
+     Also shows the current ongoing streak.
+     ══════════════════════════════════════════════════════════════ */
+  function initStreakFinder(rows) {
+
+    /* 1. Sort all races chronologically by StartDate */
+    const sorted = rows
+      .filter(r => r.StartDate && r.StartDate.trim() !== '')
+      .sort((a, b) => new Date(a.StartDate) - new Date(b.StartDate));
+
+    /* 2. Build a flat list of individual shooting stages.
+          Each entry: { date: ISO string, missed: boolean }
+          NrShootings tells us how many stages this race had (2 or 4).
+          miss_1…miss_4 give misses per stage; NA → treat as 0.        */
+    const stages = [];
+    for (const row of sorted) {
+      const n = parseInt(row.NrShootings) || 0;
+      for (let i = 1; i <= n; i++) {
+        const raw = row[`miss_${i}`];
+        const misses = (raw === 'NA' || raw === '' || raw === undefined) ? 0 : parseInt(raw) || 0;
+        stages.push({ date: row.StartDate.trim(), missed: misses > 0 });
+      }
+    }
+
+    if (stages.length === 0) return;
+
+    /* 3. Scan for longest streak of consecutive stages with misses > 0 */
+    let maxLen = 0, maxStart = 0, maxEnd = 0;
+    let curLen = 0, curStart = 0;
+
+    for (let i = 0; i < stages.length; i++) {
+      if (stages[i].missed) {
+        if (curLen === 0) curStart = i;
+        curLen++;
+        if (curLen > maxLen) {
+          maxLen   = curLen;
+          maxStart = curStart;
+          maxEnd   = i;
+        }
+      } else {
+        curLen = 0;
+      }
+    }
+
+    /* 4. Current ongoing streak — tail of the array */
+    let ongoingLen = 0;
+    for (let i = stages.length - 1; i >= 0; i--) {
+      if (stages[i].missed) {
+        ongoingLen++;
+      } else {
+        break;
+      }
+    }
+    const ongoingStart = ongoingLen > 0
+      ? stages[stages.length - ongoingLen].date
+      : null;
+
+    /* 5. Format a date string "DD Mon YYYY" */
+    function fmtDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    /* 6. Populate DOM */
+    const periodEl  = document.getElementById('streak-period');
+    const cCountEl  = document.getElementById('current-streak-count');
+    const cSinceEl  = document.getElementById('current-streak-since');
+
+    periodEl.textContent =
+      fmtDate(stages[maxStart].date) + ' → ' + fmtDate(stages[maxEnd].date);
+
+    if (ongoingLen > 0) {
+      cCountEl.textContent = ongoingLen;
+      cSinceEl.textContent = 'Depuis le ' + fmtDate(ongoingStart);
+    } else {
+      cCountEl.textContent = '0';
+      cSinceEl.textContent = 'Carton plein lors du dernier tir 👏';
+    }
+
+    /* 7. Scroll-triggered animation for the big number */
+    const countEl = document.getElementById('streak-count');
+    const section = document.getElementById('streak-finder');
+    let animated  = false;
+
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !animated) {
+        animated = true;
+        animateCounter(countEl, maxLen, 1800);
+        observer.disconnect();
+      }
+    }, { threshold: 0.4 });
+
+    observer.observe(section);
+  }
+
+  Papa.parse('data/penalty_loop.csv', {
+    download: true,
+    header: true,
+    complete: function(results) {
+      const jacquelinRows = results.data.filter(r => r.FullName === 'Emilien JACQUELIN');
+      const laegreidRows  = results.data.filter(r => r.FullName === 'Sturla Holm LAEGREID');
+      initHero(jacquelinRows);
+      initStatsBar(jacquelinRows);
+      initSeasonChart(jacquelinRows);
+      initHallOfShame(jacquelinRows);
+      initComparison(jacquelinRows, laegreidRows);
+      initStreakFinder(jacquelinRows);
+    },
+    error: function(err) {
+      console.error('Erreur de chargement CSV :', err);
+    }
+  });
+
+</script>
+
+</body>
+</html>
