@@ -20,11 +20,70 @@
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
+    /* ─── Theme: CSS Custom Properties ─────────────────────────── */
+    :root {
+      /* backgrounds */
+      --bg:               #0a0a0a;
+      --bg-card:          #111111;
+      --bg-badge:         #1a1a1a;
+      --bg-card-worst-a:  #160a0a;
+      --bg-card-worst-b:  #111111;
+      /* text */
+      --text-primary:     #f5f5f5;
+      --text-dim:         #6b7280;
+      /* accents */
+      --accent-red:       #ef4444;
+      --accent-red-rgb:   239, 68, 68;
+      --accent-red-dark:  #b91c1c;
+      --accent-gold:      #f59e0b;
+      --accent-gold-dark: #d97706;
+      --accent-blue:      #3b82f6;
+      --accent-blue-rgb:  59, 130, 246;
+      /* borders */
+      --border-section:   #1a1a1a;
+      --border-card:      #1f1f1f;
+      --border-shame-row: #161616;
+      --border-shame-top: #2a1212;
+      /* charts */
+      --chart-grid:       rgba(255,255,255,0.05);
+      --chart-tick:       #9ca3af;
+      --chart-label:      #6b7280;
+    }
+
+    [data-theme="glory"] {
+      --bg:               #fafaf7;
+      --bg-card:          #f0f0ea;
+      --bg-badge:         #e0e0d8;
+      --bg-card-worst-a:  #f0ead8;
+      --bg-card-worst-b:  #f0f0ea;
+
+      --text-primary:     #1a1a1a;
+      --text-dim:         #6b7280;
+
+      --accent-red:       #d97706;
+      --accent-red-rgb:   217, 119, 6;
+      --accent-red-dark:  #92400e;
+      --accent-gold:      #d97706;
+      --accent-gold-dark: #b45309;
+      --accent-blue:      #1d4ed8;
+      --accent-blue-rgb:  29, 78, 216;
+
+      --border-section:   #e0e0d8;
+      --border-card:      #d0d0c8;
+      --border-shame-row: #d0d0c8;
+      --border-shame-top: #c0c0b8;
+
+      --chart-grid:       rgba(0,0,0,0.05);
+      --chart-tick:       #6b7280;
+      --chart-label:      #4b5563;
+    }
+
     /* ─── Base ─────────────────────────────────────────────────── */
     body {
-      background-color: #0a0a0a;
-      color: #f5f5f5;
+      background-color: var(--bg);
+      color: var(--text-primary);
       font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+      transition: background-color 0.4s ease, color 0.4s ease;
     }
 
     /* ─── Animated counter ──────────────────────────────────────── */
@@ -32,10 +91,10 @@
       font-size: clamp(6rem, 20vw, 14rem);
       font-weight: 900;
       line-height: 1;
-      color: #ef4444;
+      color: var(--accent-red);
       text-shadow:
-        0 0 40px rgba(239, 68, 68, 0.6),
-        0 0 80px rgba(239, 68, 68, 0.3);
+        0 0 40px rgba(var(--accent-red-rgb), 0.6),
+        0 0 80px rgba(var(--accent-red-rgb), 0.3);
       letter-spacing: -0.02em;
       display: inline-block;
     }
@@ -66,20 +125,26 @@
 
     /* Pulsing glow ring around the number */
     @keyframes pulse-ring {
-      0%   { box-shadow: 0 0 0 0   rgba(239, 68, 68, 0.4); }
-      70%  { box-shadow: 0 0 0 30px rgba(239, 68, 68, 0);   }
-      100% { box-shadow: 0 0 0 0   rgba(239, 68, 68, 0);    }
+      0%   { box-shadow: 0 0 0 0    rgba(var(--accent-red-rgb), 0.4); }
+      70%  { box-shadow: 0 0 0 30px rgba(var(--accent-red-rgb), 0);   }
+      100% { box-shadow: 0 0 0 0    rgba(var(--accent-red-rgb), 0);   }
     }
     .pulse-ring { animation: pulse-ring 2.5s ease-out infinite; }
 
     /* Distance badge */
     .km-badge {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
-      color: #0a0a0a;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dark));
+      color: var(--bg);
       font-weight: 900;
       border-radius: 0.5rem;
       padding: 0.15em 0.5em;
       display: inline-block;
+    }
+
+    /* Hero background glow — replaces inline style */
+    .hero-glow {
+      background: radial-gradient(ellipse 60% 40% at 50% 50%, rgba(var(--accent-red-rgb), 0.08) 0%, transparent 70%);
+      transition: background 0.4s ease;
     }
 
     /* Tagline fade-in */
@@ -94,8 +159,8 @@
 
     /* ─── Stat cards (Feature 2) ────────────────────────────────── */
     .stat-card {
-      background: #111111;
-      border: 1px solid #1f1f1f;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
       border-radius: 0.75rem;
       padding: 1.5rem 1rem;
       text-align: center;
@@ -104,12 +169,13 @@
       align-items: center;
       justify-content: center;
       gap: 0.4rem;
+      transition: background 0.4s ease, border-color 0.4s ease;
     }
 
-    /* Worst-season card gets a faint red accent */
+    /* Worst-season card gets a faint accent */
     .stat-card-worst {
-      border-color: rgba(239, 68, 68, 0.25);
-      background: linear-gradient(160deg, #160a0a, #111111);
+      border-color: rgba(var(--accent-red-rgb), 0.25);
+      background: linear-gradient(160deg, var(--bg-card-worst-a), var(--bg-card-worst-b));
     }
 
     /* Big number inside a card */
@@ -137,7 +203,7 @@
       font-size: 0.6rem;
       text-transform: uppercase;
       letter-spacing: 0.14em;
-      color: #6b7280;
+      color: var(--text-dim);
       line-height: 1.5;
     }
 
@@ -146,18 +212,18 @@
       font-size: clamp(5rem, 16vw, 9rem);
       font-weight: 900;
       line-height: 1;
-      color: #ef4444;
-      text-shadow: 0 0 40px rgba(239,68,68,0.35);
+      color: var(--accent-red);
+      text-shadow: 0 0 40px rgba(var(--accent-red-rgb), 0.35);
     }
 
     /* ─── Hall of Shame table (Feature 4) ──────────────────────── */
     .shame-row-top {
-      background: linear-gradient(90deg, rgba(239,68,68,0.08) 0%, transparent 60%);
-      border-left: 3px solid #ef4444;
-      border-bottom: 1px solid #2a1212;
+      background: linear-gradient(90deg, rgba(var(--accent-red-rgb), 0.08) 0%, transparent 60%);
+      border-left: 3px solid var(--accent-red);
+      border-bottom: 1px solid var(--border-shame-top);
     }
     .shame-row {
-      border-bottom: 1px solid #161616;
+      border-bottom: 1px solid var(--border-shame-row);
     }
     .discipline-badge {
       font-size: 0.6rem;
@@ -165,13 +231,326 @@
       letter-spacing: 0.1em;
       padding: 0.2em 0.55em;
       border-radius: 0.25rem;
-      background: #1a1a1a;
-      color: #6b7280;
+      background: var(--bg-badge);
+      color: var(--text-dim);
       white-space: nowrap;
     }
+
+    /* ─── Section dividers ──────────────────────────────────────── */
+    /* Override Tailwind's hardcoded border-[#1a1a1a] on section top borders */
+    #stats-bar, #season-chart, #hall-of-shame, #comparison, #streak-finder {
+      border-top-color: var(--border-section);
+      transition: border-color 0.4s ease;
+    }
+
+    /* ─── Theme toggle button (sun/moon icon, easter egg) ───────── */
+    .theme-toggle {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.25rem;
+      z-index: 500;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.5);
+      color: #d1d5db;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .theme-toggle svg {
+      width: 1rem;
+      height: 1rem;
+      flex-shrink: 0;
+    }
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #f3f4f6;
+    }
+    [data-theme="glory"] .theme-toggle {
+      background: rgba(255, 255, 255, 0.85);
+      color: #374151;
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+    [data-theme="glory"] .theme-toggle:hover {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.22);
+    }
+
+    /* ─── Iris-wipe transition overlay ──────────────────────────── */
+    #theme-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      pointer-events: none;
+    }
+
+    /* ─── Glory world — counter ──────────────────────────────────── */
+    .glory-counter {
+      font-size: clamp(6rem, 20vw, 14rem);
+      font-weight: 900;
+      line-height: 1;
+      color: var(--accent-gold);
+      text-shadow:
+        0 0 40px rgba(var(--accent-red-rgb), 0.5),
+        0 0 80px rgba(var(--accent-red-rgb), 0.2);
+      letter-spacing: -0.02em;
+      display: inline-block;
+    }
+
+    /* ─── Glory world — timeline + cards ────────────────────────── */
+    .glory-timeline-list {
+      position: relative;
+      padding-left: 0;
+      list-style: none;
+    }
+    /* Vertical connector line */
+    .glory-timeline-list::before {
+      content: '';
+      position: absolute;
+      left: 1.85rem;
+      top: 1.85rem;
+      bottom: 1.85rem;
+      width: 1px;
+      background: var(--border-section);
+    }
+    .glory-card {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      align-items: flex-start;
+    }
+    .glory-medal-dot {
+      flex-shrink: 0;
+      width: 3.7rem;
+      height: 3.7rem;
+      border-radius: 9999px;
+      background: var(--bg-card);
+      border: 2px solid var(--border-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      position: relative;
+      z-index: 1;
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    .glory-card-body {
+      flex: 1;
+      position: relative;   /* anchor for clean-flash overlay */
+      overflow: hidden;     /* clip flash within card bounds */
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-left: 3px solid var(--accent-gold);
+      border-radius: 0.75rem;
+      padding: 1.25rem 1.5rem;
+      transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    .glory-card-meta {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-dim);
+      margin-bottom: 0.4rem;
+    }
+    .glory-card-event-tag { color: var(--accent-gold); font-weight: 900; }
+    .glory-card-title {
+      font-size: clamp(0.95rem, 2vw, 1.1rem);
+      font-weight: 900;
+      color: var(--text-primary);
+      margin-bottom: 0.4rem;
+      line-height: 1.2;
+    }
+    .glory-card-text {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+      line-height: 1.65;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-weight: 400;
+      margin-bottom: 0.75rem;
+    }
+    .glory-stat-badge {
+      display: inline-block;
+      font-size: 0.6rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.2em 0.6em;
+      border-radius: 0.25rem;
+      background: var(--bg-badge);
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    /* Green "clean shoot" badge — dark mode */
+    .glory-stat-clean { background: rgba(34,197,94,0.12); color: #4ade80; }
+    /* Green in glory (light) mode */
+    [data-theme="glory"] .glory-stat-clean { background: rgba(21,128,61,0.1); color: #15803d; }
+
+    /* ─── Medal ticker (Idea 6) ─────────────────────────────────── */
+    .medal-ticker-wrap {
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+      mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+      margin-bottom: 1.75rem;
+    }
+    .medal-ticker {
+      display: flex;
+      gap: 1.1rem;
+      width: max-content;
+      animation: ticker-scroll 18s linear infinite;
+    }
+    .medal-ticker-item { font-size: 1.8rem; flex-shrink: 0; }
+    @keyframes ticker-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ─── Clean shoot flash (Idea 3) ────────────────────────────── */
+    /* Container — anchors the two phrase overlays inside the card */
+    .clean-flash {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      user-select: none;
+      z-index: 0;
+    }
+    /* Shared label style — each phrase sits full-size over the card */
+    .flash-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(2.4rem, 6.5vw, 4rem);
+      font-weight: 900;
+      color: var(--accent-gold);
+      letter-spacing: -0.02em;
+      text-shadow: 0 0 28px rgba(245,158,11,0.7), 0 0 60px rgba(245,158,11,0.35);
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    /* Phase 1 — "Carton plein" appears then exits */
+    .clean-flash.is-flashing .flash-label1 {
+      animation: flash-cp 4s ease-out forwards;
+    }
+    /* Phase 2 — score like "20/20" follows */
+    .clean-flash.is-flashing .flash-label2 {
+      animation: flash-score 4s ease-out forwards;
+    }
+    /* The text content of each card should sit above the flash */
+    .glory-card-body > *:not(.clean-flash) { position: relative; z-index: 1; }
+    @keyframes flash-cp {
+      0%   { opacity: 0;    transform: scale(0.6);  }
+      12%  { opacity: 0.55; transform: scale(1.0);  }
+      38%  { opacity: 0.48; transform: scale(1.0);  }
+      52%  { opacity: 0;    transform: scale(1.06); }
+      100% { opacity: 0; }
+    }
+    @keyframes flash-score {
+      0%   { opacity: 0; }
+      48%  { opacity: 0;    transform: scale(0.72); }
+      62%  { opacity: 0.55; transform: scale(1.0);  }
+      82%  { opacity: 0.45; transform: scale(1.0);  }
+      100% { opacity: 0;    transform: scale(1.1);  }
+    }
+
+    /* ─── Sound toggle button (Idea 4) ─────────────────────────── */
+    .sound-toggle {
+      position: fixed;
+      top: 4.25rem;
+      right: 1.25rem;
+      z-index: 500;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.5);
+      color: #d1d5db;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none; /* hidden in misses mode */
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .sound-toggle svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+    .sound-toggle:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #f3f4f6;
+    }
+    [data-theme="glory"] .sound-toggle {
+      display: flex;
+      background: rgba(255, 255, 255, 0.85);
+      color: #374151;
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+    [data-theme="glory"] .sound-toggle:hover {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.22);
+    }
+
+    /* ─── Glory mode: Tailwind color overrides ───────────────────── */
+    [data-theme="glory"] .text-white             { color: var(--text-primary) !important; }
+    [data-theme="glory"] .text-gray-300          { color: #374151 !important; }
+    [data-theme="glory"] .text-gray-400          { color: #4b5563 !important; }
+    [data-theme="glory"] .text-gray-500          { color: #6b7280 !important; }
+    [data-theme="glory"] .text-gray-600          { color: #6b7280 !important; }
+    [data-theme="glory"] .text-red-500           { color: var(--accent-red) !important; }
+    [data-theme="glory"] .text-red-400           { color: var(--accent-red) !important; }
+    [data-theme="glory"] .text-red-600           { color: var(--accent-red-dark) !important; }
+    [data-theme="glory"] .text-yellow-500        { color: var(--accent-gold) !important; }
+    [data-theme="glory"] .border-red-900         { border-color: var(--accent-gold-dark) !important; }
+    [data-theme="glory"] .bg-yellow-500          { background-color: var(--accent-gold) !important; }
+    /* Table header border */
+    [data-theme="glory"] #hall-of-shame thead tr { border-bottom-color: var(--border-card); }
+    /* Streak separator line */
+    [data-theme="glory"] #streak-finder .h-px    { background-color: var(--border-section); }
   </style>
 </head>
 <body>
+
+<!-- Fixed toggle button — looks like a light/dark mode toggle (easter egg) -->
+<button id="theme-toggle" class="theme-toggle" onclick="toggleTheme(this)" title="Changer de thème" aria-label="Basculer le thème">
+  <!-- Sun icon: shown in dark/misses mode (click → glory/light) -->
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+</button>
+
+<!-- Full-screen overlay for the iris-wipe transition (clip-path circle animation) -->
+<div id="theme-overlay"></div>
+
+<!-- Sound toggle (glory mode only — plays La Marseillaise) -->
+<button id="sound-toggle" class="sound-toggle" onclick="toggleSound()" title="La Marseillaise 🇫🇷" aria-label="Jouer la Marseillaise">
+  <!-- Speaker-off icon by default -->
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+    <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+  </svg>
+</button>
+<!-- La Marseillaise — public domain recording via Wikimedia Commons -->
+<audio id="glory-audio" loop preload="none">
+  <source src="https://upload.wikimedia.org/wikipedia/commons/transcoded/3/30/La_Marseillaise.ogg/La_Marseillaise.ogg.mp3" type="audio/mpeg">
+  <source src="https://upload.wikimedia.org/wikipedia/commons/3/30/La_Marseillaise.ogg" type="audio/ogg">
+</audio>
+
+<!-- ════ HALL OF MISSES — all existing features ═══════════════════ -->
+<div id="misses-world">
 
 <!-- ════════════════════════════════════════════════════════════════
      FEATURE 1 — HERO SECTION
@@ -188,11 +567,8 @@
     background-size: 200px;"
   ></div>
 
-  <!-- Subtle red radial glow in the background -->
-  <div
-    class="absolute inset-0 pointer-events-none"
-    style="background: radial-gradient(ellipse 60% 40% at 50% 50%, rgba(239,68,68,0.08) 0%, transparent 70%);"
-  ></div>
+  <!-- Subtle accent radial glow in the background — color via CSS var -->
+  <div class="hero-glow absolute inset-0 pointer-events-none"></div>
 
   <!-- Label above the number -->
   <p class="fade-in text-xs uppercase tracking-[0.3em] text-gray-500 mb-4">
@@ -409,10 +785,468 @@
   </div>
 </section>
 
+</div><!-- /misses-world -->
+
+<!-- ════════════════════════════════════════════════════════════════
+     HALL OF GLORY — parallel world, shown when theme = glory
+     ════════════════════════════════════════════════════════════════ -->
+<div id="glory-world" style="display:none">
+
+  <!-- Glory Hero -->
+  <section class="relative min-h-screen flex flex-col items-center justify-center text-center px-6 py-20 overflow-hidden">
+    <!-- Warm golden radial glow -->
+    <div class="absolute inset-0 pointer-events-none"
+      style="background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(var(--accent-red-rgb), 0.12) 0%, transparent 70%);"></div>
+
+    <p class="fade-in text-xs uppercase tracking-[0.3em] mb-3" style="color:var(--accent-gold)">
+      Hall of Glory — Emilien Jacquelin
+    </p>
+
+    <!-- Medal ticker (Idea 6) — built by JS from GLORY_MOMENTS -->
+    <div class="medal-ticker-wrap fade-in">
+      <div class="medal-ticker" id="glory-medal-track"></div>
+    </div>
+
+    <!-- Animated win counter (computed from CSV) -->
+    <div class="relative inline-block mb-6">
+      <span class="glory-counter" id="glory-counter">0</span>
+    </div>
+
+    <p class="fade-in-delay-1 text-lg md:text-xl max-w-xl leading-snug mb-2" style="color:var(--text-primary)">
+      victoires
+    </p>
+    <p class="fade-in-delay-2 text-sm mb-10" id="glory-indiv-stat" style="color:var(--text-dim)">
+      dont — victoires individuelles
+    </p>
+
+    <p class="fade-in-delay-3 text-2xl md:text-3xl font-black tracking-tight max-w-lg" style="color:var(--text-primary)">
+      "Il tire peut-être comme un pied,<br/>mais il gagne comme un dieu."
+    </p>
+
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
+      <span class="text-xs uppercase tracking-widest" style="color:var(--text-dim)">Défiler</span>
+      <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--text-dim)">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Glory Timeline -->
+  <section class="px-6 py-16" style="border-top:1px solid var(--border-section)">
+    <div class="max-w-3xl mx-auto">
+      <div class="mb-12 text-center">
+        <p class="text-xs uppercase tracking-[0.3em] mb-2" style="color:var(--text-dim)">Retour sur les sommets</p>
+        <h2 class="text-2xl md:text-3xl font-black" style="color:var(--text-primary)">Les Exploits</h2>
+        <p class="text-sm mt-3 max-w-md mx-auto" style="color:var(--text-dim)">
+          Les courses qui prouvent qu'Emilien Jacquelin est, malgré tout, un champion absolu.
+        </p>
+      </div>
+      <!-- Cards injected by JS after CSV loads -->
+      <ol class="glory-timeline-list" id="glory-cards"></ol>
+    </div>
+  </section>
+
+  <!-- Glory Victories Table -->
+  <section class="px-6 py-16" id="glory-victories" style="border-top:1px solid var(--border-section)">
+    <div class="max-w-3xl mx-auto">
+      <div class="mb-8 text-center">
+        <p class="text-xs uppercase tracking-[0.3em] mb-2" style="color:var(--text-dim)">Le bilan individuel</p>
+        <h2 class="text-2xl md:text-3xl font-black" style="color:var(--text-primary)">Victoires</h2>
+        <p class="text-sm mt-3" style="color:var(--text-dim)">5 victoires mais surtout 2 titres de champion du monde.</p>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr style="border-bottom:2px solid var(--border-card)">
+              <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-left" style="color:var(--text-dim)">Date</th>
+              <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-left" style="color:var(--text-dim)">Lieu</th>
+              <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-left" style="color:var(--text-dim)">Discipline</th>
+              <th class="pb-3 pr-6 text-xs uppercase tracking-wider text-left" style="color:var(--text-dim)">Compétition</th>
+              <th class="pb-3 text-xs uppercase tracking-wider text-right" style="color:var(--text-dim)">Tir</th>
+            </tr>
+          </thead>
+          <tbody id="glory-victories-body">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /glory-world -->
+
 <!-- ════════════════════════════════════════════════════════════════
      SCRIPTS
      ════════════════════════════════════════════════════════════════ -->
 <script>
+
+  /* ── Utility: read a CSS custom property from :root ───────────── */
+  function getCSSVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  /* ── SVG icons for the theme toggle button ──────────────────────
+     Sun  = currently in dark/misses mode (click → glory/light)
+     Moon = currently in light/glory mode  (click → misses/dark)   */
+  const SUN_ICON  = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+  const MOON_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+  /* Sound button icons */
+  const SPEAKER_OFF = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
+  const SPEAKER_ON  = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+
+  /* Medal ticker data — editorial, ordered chronologically.
+     Includes all podium medals across WC, Worlds, Olympics.   */
+  const GLORY_TICKER_MEDALS = [
+    '🥇','🥇','🥉',   // Mondiaux 2020: Poursuite, Relais, Mass Start
+    '🥉','🥇',         // Mondiaux 2021: Sprint, Poursuite
+    '🥇',              // CDM 2021: Grand-Bornand
+    '🥈','🥈',         // JO 2022: Relais Mixte, Relais Hommes
+    '🥇',              // Mondiaux 2023: Relais
+    '🥇',              // CDM 2024: Kontiolahti Sprint
+    '🥇',              // CDM 2025: Vysocina Sprint
+    '🥇',              // Mondiaux 2025: Relais Mixte
+    '🥉','🥇',         // JO 2026: Poursuite, Relais
+  ];
+
+  /* ── Restore theme from localStorage (runs before CSV loads) ───── */
+  (function initTheme() {
+    if (localStorage.getItem('jacq-theme') === 'glory') {
+      document.documentElement.setAttribute('data-theme', 'glory');
+      document.getElementById('misses-world').style.display = 'none';
+      document.getElementById('glory-world').style.display  = 'block';
+      const btn = document.getElementById('theme-toggle');
+      if (btn) btn.innerHTML = MOON_ICON;
+    }
+  })();
+
+  /* ── Iris-wipe theme toggle ─────────────────────────────────────
+     A circle expands from the button to cover the viewport,
+     worlds swap behind it, then the circle contracts to reveal
+     the new world.                                                */
+  function toggleTheme(btn) {
+    const isGlory = document.documentElement.getAttribute('data-theme') === 'glory';
+    const overlay = document.getElementById('theme-overlay');
+    const rect    = btn.getBoundingClientRect();
+    const cx      = rect.left + rect.width  / 2;
+    const cy      = rect.top  + rect.height / 2;
+    const maxR    = Math.hypot(window.innerWidth, window.innerHeight) * 1.05;
+
+    // Overlay color = destination theme's background
+    overlay.style.background = isGlory ? '#0a0a0a' : '#fafaf7';
+    overlay.style.display    = 'block';
+    overlay.style.transition = 'none';
+    overlay.style.clipPath   = `circle(0px at ${cx}px ${cy}px)`;
+    overlay.offsetHeight; // force reflow so initial clip-path registers
+
+    // Phase 1 — expand circle to cover viewport
+    overlay.style.transition = 'clip-path 0.55s cubic-bezier(0.4, 0, 0.6, 1)';
+    overlay.style.clipPath   = `circle(${maxR}px at ${cx}px ${cy}px)`;
+
+    setTimeout(() => {
+      // Phase 2 — swap worlds while covered
+      const missesEl = document.getElementById('misses-world');
+      const gloryEl  = document.getElementById('glory-world');
+
+      if (isGlory) {
+        document.documentElement.removeAttribute('data-theme');
+        missesEl.style.display = 'block';
+        gloryEl.style.display  = 'none';
+        btn.innerHTML = SUN_ICON;
+        // Pause La Marseillaise and reset sound button
+        const audio = document.getElementById('glory-audio');
+        if (audio && !audio.paused) audio.pause();
+        const sndBtn = document.getElementById('sound-toggle');
+        if (sndBtn) sndBtn.innerHTML = SPEAKER_OFF;
+      } else {
+        document.documentElement.setAttribute('data-theme', 'glory');
+        missesEl.style.display = 'none';
+        gloryEl.style.display  = 'block';
+        btn.innerHTML = MOON_ICON;
+        animateGloryCounter();
+        // Auto-play La Marseillaise (button click = valid user gesture)
+        const audio  = document.getElementById('glory-audio');
+        const sndBtn = document.getElementById('sound-toggle');
+        if (audio && sndBtn) {
+          audio.play().catch(e => console.error('Audio play failed:', e));
+          sndBtn.innerHTML = SPEAKER_ON;
+        }
+      }
+      localStorage.setItem('jacq-theme', isGlory ? 'misses' : 'glory');
+      window.scrollTo(0, 0);
+
+      // Phase 3 — collapse circle to reveal new world
+      overlay.style.transition = 'clip-path 0.5s cubic-bezier(0.4, 0, 0.6, 1)';
+      overlay.style.clipPath   = `circle(0px at ${cx}px ${cy}px)`;
+      setTimeout(() => { overlay.style.display = 'none'; }, 520);
+    }, 580);
+  }
+
+  /* ── Glory counter: animate from 0 → total wins ─────────────── */
+  function animateGloryCounter() {
+    const wins = window._gloryWins;
+    if (!wins) return;
+    const el = document.getElementById('glory-counter');
+    if (!el) return;
+    el.textContent = '0';
+    setTimeout(() => animateCounter(el, wins.total, 2000), 300);
+  }
+
+  /* ── Sound toggle: play/pause La Marseillaise ───────────────── */
+  function toggleSound() {
+    const audio  = document.getElementById('glory-audio');
+    const btn    = document.getElementById('sound-toggle');
+    if (!audio || !btn) return;
+    if (audio.paused) {
+      audio.play().catch(e => console.error('Audio play failed:', e));
+      btn.innerHTML = SPEAKER_ON;
+    } else {
+      audio.pause();
+      btn.innerHTML = SPEAKER_OFF;
+    }
+  }
+
+  /* ── Medal ticker: build from GLORY_TICKER_MEDALS ────────────── */
+  function buildGloryTicker() {
+    const track = document.getElementById('glory-medal-track');
+    if (!track) return;
+    // Double the array for a seamless infinite scroll (translateX(-50%) = 1 set width)
+    [...GLORY_TICKER_MEDALS, ...GLORY_TICKER_MEDALS].forEach(m => {
+      const span = document.createElement('span');
+      span.className = 'medal-ticker-item';
+      span.textContent = m;
+      track.appendChild(span);
+    });
+  }
+
+  /* ── Glory moments: editorial data (exception to no-hardcode rule;
+     narratives from GLORY.md cannot be derived from the CSV).
+     CSV-derived shooting stats are looked up at runtime.         */
+  const GLORY_MOMENTS = [
+    {
+      dateISO: '2020-02-16', disciplineCSV: 'Pursuit',
+      medal: '🥇', dateLabel: '16 fév. 2020',
+      location: 'Antholz-Anterselva', discipline: 'Poursuite',
+      eventShort: 'MONDIAUX',
+      title: 'Le sacre fondateur',
+      text: 'Parti 6ème après le sprint, 20/20 au tir, victoire après un sprint épique face à Johannes Bø. Sa première victoire individuelle et il est champion du monde. Emilien n\'est pas du genre à faire les choses à moitié.',
+    },
+    {
+      dateISO: null, disciplineCSV: null,
+      medal: '🥇🥉', dateLabel: 'Fév. 2020',
+      location: 'Antholz-Anterselva', discipline: 'Relais & Mass Start',
+      eventShort: 'MONDIAUX',
+      title: 'L\'édition parfaite',
+      text: 'Quatre médailles sur une seule édition des Mondiaux. L\'or en relais avec Fourcade, Desthieux et Fillon Maillet, le bronze en mass start et le titre sur la poursuite. Il devient le Français le plus médaillé d\'une seule édition des Mondiaux de biathlon.',
+    },
+    {
+      dateISO: '2021-02-11', disciplineCSV: 'Sprint',
+      medal: '🥉', dateLabel: 'Fév. 2021',
+      location: 'Pokljuka', discipline: 'Sprint',
+      eventShort: 'MONDIAUX',
+      title: 'L\'apéritif',
+      text: 'Bronze au sprint — l\'amuse-bouche avant la défense de son titre en poursuite trois jours plus tard.',
+    },
+    {
+      dateISO: '2021-02-14', disciplineCSV: 'Pursuit',
+      medal: '🥇', dateLabel: '14 fév. 2021',
+      location: 'Pokljuka', discipline: 'Poursuite',
+      eventShort: 'MONDIAUX',
+      title: 'Back-to-back',
+      text: 'Il conserve son titre mondial en poursuite avec un 20/20 au tir — 1 min 26 s passées sur les tapis, le plus rapide du plateau. Personne d\'autre n\'avait réussi deux titres consécutifs en poursuite aux Mondiaux.',
+    },
+    {
+      dateISO: '2021-12-19', disciplineCSV: 'Mass Start',
+      medal: '🥇', dateLabel: '19 déc. 2021',
+      location: 'Le Grand-Bornand', discipline: 'Mass Start',
+      eventShort: 'COUPE DU MONDE',
+      title: 'A la maison',
+      text: 'Sa première victoire ordinaire en Coupe du monde — deux ans après ses Mondiaux. Et c\' est dans le chaudron du Grand-Bornand. 19/20 au tir, dossard jaune arraché à Fillon Maillet, 1-2 tricolore à domicile pour Noël. Le champion du monde avait enfin gagné une course en Coupe du Monde.',
+    },
+    {
+      dateISO: null, disciplineCSV: null,
+      medal: '🥈🥈', dateLabel: 'Fév. 2022',
+      location: 'Pékin', discipline: 'Relais Mixte & Relais Hommes',
+      eventShort: 'JEUX OLYMPIQUES',
+      title: 'Premier Olympien',
+      text: 'Ses premières médailles olympiques — deux argents en relais mixte et hommes. L\'or individuel lui résiste encore. Il reviendra.',
+      noCSV: true,
+    },
+    {
+      dateISO: null, disciplineCSV: null,
+      medal: '🥇', dateLabel: 'Fév. 2023',
+      location: 'Oberhof', discipline: 'Relais Hommes',
+      eventShort: 'MONDIAUX',
+      title: 'Le refuge du champion',
+      text: 'La saison individuelle est un cauchemar — il l\'arrête prématurément, épuisé ("le réservoir est vide"). Mais l\'or en relais aux Mondiaux prouve qu\'en équipe, Jacquelin reste imbattable.',
+    },
+    {
+      dateISO: null, disciplineCSV: null,
+      medal: '🥇', dateLabel: 'Fév. 2025',
+      location: 'Lenzerheide', discipline: 'Relais Mixte',
+      eventShort: 'MONDIAUX',
+      title: 'La collection continue',
+      text: 'Encore un or mondial en relais. La domination du biathlon français s\'affirme.'
+    },
+    {
+      dateISO: null, disciplineCSV: null,
+      medal: '🥉🥇', dateLabel: 'Fév. 2026',
+      location: 'Milan-Cortina', discipline: 'Poursuite & Relais Hommes',
+      eventShort: 'JEUX OLYMPIQUES',
+      title: 'La rédemption olympique',
+      text: 'Bronze en poursuite individuelle — sa première médaille olympique individuelle, courrue avec la boucle d\'oreille de Marco Pantani à l\'oreille en hommage. Puis l\'or en relais avec un relais légendaire : lancé avec 50 secondes de retard, il passe le témoin en tête. La boucle est bouclée.',
+      noCSV: true,
+    },
+  ];
+
+  /* ── Build glory timeline cards ─────────────────────────────────
+     raceLookup: "YYYY-MM-DD|DisciplineLabel" → CSV row          */
+  function buildGloryCards(raceLookup) {
+    const container = document.getElementById('glory-cards');
+    if (!container) return;
+
+    GLORY_MOMENTS.forEach(m => {
+      // Attempt CSV shooting-stat lookup for races with known exact date
+      let statBadge   = '';
+      let isClean     = false;
+      let cleanLabel  = '';
+      if (m.dateISO && m.disciplineCSV && !m.noCSV) {
+        const row = raceLookup[`${m.dateISO}|${m.disciplineCSV}`];
+        if (row) {
+          const misses = parseInt(row.total_misses) || 0;
+          const shots  = (parseInt(row.NrShootings) || 0) * 5;
+          if (shots > 0) {
+            isClean    = misses === 0;
+            cleanLabel = `${shots}/${shots}`;
+            const cls  = isClean ? ' glory-stat-clean' : '';
+            const label = isClean
+              ? `${shots}/${shots} — carton plein ✓`
+              : `${shots - misses}/${shots} au tir (${misses} manqué${misses > 1 ? 's' : ''})`;
+            statBadge = `<span class="glory-stat-badge${cls}">${label}</span>`;
+          }
+        }
+      }
+
+      // Clean-shoot flash overlay (shows watermark text when card scrolls in)
+      const flashHtml = isClean
+        ? `<div class="clean-flash" aria-hidden="true">
+             <span class="flash-label flash-label1">Carton plein</span>
+             <span class="flash-label flash-label2">${cleanLabel}</span>
+           </div>`
+        : '';
+
+      const li = document.createElement('li');
+      li.className = 'glory-card';
+      li.innerHTML = `
+        <div class="glory-medal-dot" aria-hidden="true">${m.medal}</div>
+        <div class="glory-card-body">
+          ${flashHtml}
+          <div class="glory-card-meta">
+            <span class="glory-card-event-tag">${m.eventShort}</span>
+            &nbsp;·&nbsp;${m.dateLabel}&nbsp;·&nbsp;${m.location}
+          </div>
+          <h3 class="glory-card-title">${m.title}</h3>
+          <p class="glory-card-text">${m.text}</p>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
+            <span class="glory-stat-badge">${m.discipline}</span>
+            ${statBadge}
+          </div>
+        </div>
+      `;
+      container.appendChild(li);
+
+      // Scroll-triggered flash for clean-shoot cards (fires once, on entry)
+      if (isClean) {
+        const flashEl = li.querySelector('.clean-flash');
+        if (flashEl) {
+          const obs = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting) {
+              flashEl.classList.add('is-flashing');
+              obs.disconnect();
+            }
+          }, { threshold: 0.35 });
+          obs.observe(li);
+        }
+      }
+    });
+  }
+
+  /* ── Build individual victories table ─────────────────────────── */
+  function buildGloryVictoriesTable(jacquelinRows) {
+    const tbody = document.getElementById('glory-victories-body');
+    if (!tbody) return;
+
+    // Individual wins: rank 1, not relay, sorted chronologically
+    const wins = jacquelinRows
+      .filter(r => parseInt(r.RankInt) === 1 && r.IsRelay !== 'TRUE')
+      .sort((a, b) => (a.StartDate || '').localeCompare(b.StartDate || ''));
+
+    wins.forEach((r, i) => {
+      // Competition type derived from RaceId
+      let compLabel = 'CdM';
+      if (r.RaceId && r.RaceId.includes('CH__')) compLabel = 'CM';
+      else if (r.RaceId && (r.RaceId.includes('OG__') || r.RaceId.includes('_OG_'))) compLabel = 'JO';
+
+      // Shooting stat: hits/total formatted as "19/20"
+      const misses = parseInt(r.total_misses) || 0;
+      const total  = (parseInt(r.NrShootings) || 0) * 5;
+      const hits   = total - misses;
+      const isClean = misses === 0;
+      const shotStat = total > 0 ? `${hits}/${total}` : '—';
+
+      // Date in French
+      const dateStr = r.StartDate
+        ? new Date(r.StartDate).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
+        : '—';
+
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid var(--border-card)';
+
+      const shotBadgeClass = isClean ? 'glory-stat-badge glory-stat-clean' : 'glory-stat-badge';
+      const shotLabel = isClean ? `${shotStat} ✓` : shotStat;
+
+      tr.innerHTML = `
+        <td class="py-3 pr-6 text-sm" style="color:var(--text-dim)">${dateStr}</td>
+        <td class="py-3 pr-6 font-bold text-sm" style="color:var(--text-primary)">${r.Location || '—'}</td>
+        <td class="py-3 pr-6"><span class="discipline-badge">${r.DisciplineLabel || '—'}</span></td>
+        <td class="py-3 pr-6"><span class="glory-stat-badge">${compLabel}</span></td>
+        <td class="py-3 text-right"><span class="${shotBadgeClass}">${shotLabel}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* ── initGlory: compute CSV-driven stats + wire up glory world ── */
+  function initGlory(jacquelinRows) {
+    // Count victories (rank 1) from CSV — includes relay wins
+    const totalWins = jacquelinRows.filter(r => parseInt(r.RankInt) === 1).length;
+    const indivWins = jacquelinRows.filter(r => parseInt(r.RankInt) === 1 && r.IsRelay !== 'TRUE').length;
+    window._gloryWins = { total: totalWins, indiv: indivWins };
+
+    // Populate secondary stat line
+    const statEl = document.getElementById('glory-indiv-stat');
+    if (statEl) {
+      statEl.textContent =
+        `dont ${indivWins} victoire${indivWins !== 1 ? 's' : ''} individuelle${indivWins !== 1 ? 's' : ''}`;
+    }
+
+    // Build date+discipline lookup map for timeline cards
+    const raceLookup = {};
+    jacquelinRows.forEach(r => {
+      if (r.StartDate) {
+        raceLookup[`${r.StartDate.slice(0, 10)}|${r.DisciplineLabel}`] = r;
+      }
+    });
+
+    buildGloryTicker();
+    buildGloryCards(raceLookup);
+    buildGloryVictoriesTable(jacquelinRows);
+
+    // If glory world was restored from localStorage, animate counter now
+    if (document.getElementById('glory-world').style.display === 'block') {
+      animateGloryCounter();
+    }
+  }
 
   /* ── Utility: convert season code to readable label ──────────────
      "2021" → "2020-21", "2122" → "2021-22", etc.               */
@@ -535,8 +1369,9 @@
       return d.shots > 0 ? ((d.misses / d.shots) * 100).toFixed(1) + '%' : '—';
     });
 
-    // Uniform bar color
-    const colors = values.map(() => '#b91c1c');
+    // Uniform bar color — read from CSS variable so it respects active theme
+    const barColor = getCSSVar('--accent-red-dark');
+    const colors = values.map(() => barColor);
 
     // Populate the total label above the chart
     document.getElementById('season-total').textContent = values.reduce((a, b) => a + b, 0);
@@ -576,20 +1411,20 @@
             datalabels: {
               anchor: 'end',
               align: 'end',
-              color: '#9ca3af',
+              color: getCSSVar('--chart-tick'),
               font: { weight: 'bold', size: 11 },
               formatter: (_val, ctx) => missRates[ctx.dataIndex]
             }
           },
           scales: {
             x: {
-              ticks: { color: '#9ca3af', font: { weight: 'bold' } },
-              grid:  { color: 'rgba(255,255,255,0.04)' }
+              ticks: { color: getCSSVar('--chart-tick'), font: { weight: 'bold' } },
+              grid:  { color: getCSSVar('--chart-grid') }
             },
             y: {
               beginAtZero: true,
-              ticks: { color: '#9ca3af' },
-              grid:  { color: 'rgba(255,255,255,0.06)' }
+              ticks: { color: getCSSVar('--chart-tick') },
+              grid:  { color: getCSSVar('--chart-grid') }
             }
           }
         }
@@ -672,6 +1507,15 @@
       if (!entries[0].isIntersecting) return;
       observer.disconnect();
 
+      // Read theme colors at chart-creation time so the chart respects the active theme
+      const redColor   = getCSSVar('--accent-red');
+      const redRgb     = getCSSVar('--accent-red-rgb');
+      const blueColor  = getCSSVar('--accent-blue');
+      const blueRgb    = getCSSVar('--accent-blue-rgb');
+      const tickColor  = getCSSVar('--chart-tick');
+      const labelColor = getCSSVar('--chart-label');
+      const gridColor  = getCSSVar('--chart-grid');
+
       new Chart(document.getElementById('comparison-canvas'), {
         type: 'line',
         data: {
@@ -679,8 +1523,8 @@
             {
               label: 'Emilien Jacquelin',
               data: jacData,
-              borderColor: '#ef4444',
-              backgroundColor: 'rgba(239,68,68,0.07)',
+              borderColor: redColor,
+              backgroundColor: `rgba(${redRgb}, 0.07)`,
               fill: true,
               pointRadius: 0,
               borderWidth: 2.5,
@@ -689,8 +1533,8 @@
             {
               label: 'Sturla Holm Lægreid',
               data: laeData,
-              borderColor: '#3b82f6',
-              backgroundColor: 'rgba(59,130,246,0.07)',
+              borderColor: blueColor,
+              backgroundColor: `rgba(${blueRgb}, 0.07)`,
               fill: true,
               pointRadius: 0,
               borderWidth: 2.5,
@@ -706,7 +1550,7 @@
           plugins: {
             legend: {
               display: true,
-              labels: { color: '#9ca3af', font: { weight: 'bold' }, boxWidth: 20 }
+              labels: { color: tickColor, font: { weight: 'bold' }, boxWidth: 20 }
             },
             tooltip: {
               callbacks: {
@@ -718,14 +1562,14 @@
           scales: {
             x: {
               type: 'linear',
-              title: { display: true, text: 'Visites sur le pas de tir', color: '#6b7280', font: { size: 11 } },
-              ticks: { color: '#6b7280', maxTicksLimit: 12 },
-              grid:  { color: 'rgba(255,255,255,0.04)' }
+              title: { display: true, text: 'Visites sur le pas de tir', color: labelColor, font: { size: 11 } },
+              ticks: { color: labelColor, maxTicksLimit: 12 },
+              grid:  { color: gridColor }
             },
             y: {
               beginAtZero: true,
-              ticks: { color: '#9ca3af' },
-              grid:  { color: 'rgba(255,255,255,0.06)' }
+              ticks: { color: tickColor },
+              grid:  { color: gridColor }
             }
           }
         }
@@ -851,6 +1695,7 @@
           initHallOfShame(jacquelinRows);
           initComparison(jacquelinRows, laegreidRows);
           initStreakFinder(jacquelinRows);
+          initGlory(jacquelinRows);
         }
       });
     })
