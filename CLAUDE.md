@@ -48,10 +48,6 @@ He's a champion — but his shooting is a national sport in itself.
   - `miss_1` to `miss_4` — misses per shooting stage
   - `penalty_1` to `penalty_4` — penalty loops per shooting stage
 
-- Known totals (use as **sanity check only — never hardcode these**):
-  - 172 races total
-  - 481 career misses
-  - 321 career penalty loops = **48,150 meters = ~48 km** of penalty loops run
 
 ---
 
@@ -97,6 +93,30 @@ He's a champion — but his shooting is a national sport in itself.
 
 ### 6. Miss Streak Finder
 - Find the longest streak of shooting events without cleaning all 5 targets
+
+### 7. Hall of Glory — The Bright Side (Light Mode)
+- A toggle button (sun/moon icon) in the header switches the entire site between dark "Hall of Misses" mode and light "Hall of Glory" mode
+- Light theme: warm cream background (`#fafaf7`), French blue (`#1d4ed8`) + gold (`#d97706`) accents, no red
+- In glory mode, a full-width scroll-story article section replaces the shame narrative with an editorial timeline of his greatest moments
+- **Content source**: `GLORY.md` — race narratives are editorial text and may be hardcoded (exception to the no-hardcoding rule); this is the only feature where hardcoded content is allowed
+- Each story card in the timeline shows:
+  - Date + location + discipline + medal emoji (🥇🥈🥉)
+  - A 1–2 sentence editorial narrative (from GLORY.md)
+  - CSV-derived shooting stat for that specific race (e.g., "20/20 — clean shoot" or misses count), fetched by matching `StartDate` + `DisciplineLabel`
+  - A visual medal badge / ribbon decoration
+- Races to feature (from GLORY.md, in chronological order):
+  1. 2020-02-16 — Pursuit, Worlds Antholz-Anterselva 🥇 (perfect 20/20)
+  2. 2020-02 — Relay + Mass Start bronze, Worlds Antholz 🥇🥉
+  3. 2021-02-14 — Pursuit, Worlds Pokljuka 🥇 (back-to-back world title, 20/20)
+  4. 2021-02 — Sprint bronze, Worlds Pokljuka 🥉
+  5. 2021-12-19 — Mass Start, Le Grand-Bornand 🥇 (first regular WC win, 19/20)
+  6. 2022-02 — Beijing Olympics: Mixed Relay silver 🥈 + Men's Relay silver 🥈
+  7. 2023-02 — Men's Relay gold, Worlds Oberhof 🥇
+  8. 2025 — Mixed Relay gold, Worlds Lenzerheide 🥇
+  9. 2026-02 — Milan-Cortina: Pursuit bronze 🥉 (first individual Olympic medal, Pantani tribute) + Relay gold 🥇
+- CSS custom properties drive the theme; all existing features adapt their colors via those variables
+- Toggle state persists in `localStorage`
+- On mobile, the toggle is accessible and the story cards stack vertically
 
 ---
 
