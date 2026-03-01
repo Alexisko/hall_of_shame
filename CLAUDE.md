@@ -48,10 +48,6 @@ He's a champion — but his shooting is a national sport in itself.
   - `miss_1` to `miss_4` — misses per shooting stage
   - `penalty_1` to `penalty_4` — penalty loops per shooting stage
 
-- Known totals (use as **sanity check only — never hardcode these**):
-  - 172 races total
-  - 481 career misses
-  - 321 career penalty loops = **48,150 meters = ~48 km** of penalty loops run
 
 ---
 

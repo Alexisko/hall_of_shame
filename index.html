@@ -516,6 +516,86 @@
     [data-theme="glory"] #hall-of-shame thead tr { border-bottom-color: var(--border-card); }
     /* Streak separator line */
     [data-theme="glory"] #streak-finder .h-px    { background-color: var(--border-section); }
+
+    /* ── Shame Quote Block (Feature: "The Confession") ────────────── */
+    .shame-quote-block {
+      position: relative;
+      max-width: 640px;
+      margin: 2.5rem auto 0;
+      padding: 1.25rem 2.5rem 2rem 2rem;
+      text-align: left;
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.9s ease, transform 0.9s ease;
+    }
+    .shame-quote-block.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* Giant faded decorative opening quote */
+    .shame-quote-deco {
+      position: absolute;
+      top: -0.75rem;
+      left: -0.5rem;
+      width: 68px;
+      height: 56px;
+      fill: var(--accent-red);
+      opacity: 0.14;
+      pointer-events: none;
+      user-select: none;
+    }
+    /* Quote body: bold italic */
+    .shame-quote-text {
+      font-size: clamp(1rem, 2.2vw, 1.25rem);
+      font-style: italic;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.6;
+      margin-bottom: 0.9rem;
+      padding-left: 0.5rem;
+    }
+    /* Thin red divider */
+    .shame-quote-divider {
+      border: none;
+      border-top: 1px solid var(--accent-red);
+      opacity: 0.35;
+      margin-bottom: 0.55rem;
+    }
+    /* Attribution: gold small-caps */
+    .shame-quote-attribution {
+      font-size: 0.72rem;
+      font-variant: small-caps;
+      letter-spacing: 0.12em;
+      color: var(--accent-gold);
+      margin-bottom: 0.45rem;
+    }
+    /* Context: ironic fine-print punchline */
+    .shame-quote-context {
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      font-style: italic;
+      line-height: 1.55;
+    }
+    .shame-quote-context:empty { display: none; }
+    /* Cycle button */
+    .shame-quote-cycle {
+      position: absolute;
+      bottom: 0.5rem;
+      right: 0.5rem;
+      background: none;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: var(--text-dim);
+      font-size: 1rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      cursor: pointer;
+      line-height: 1.4;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .shame-quote-cycle:hover {
+      color: var(--accent-red);
+      border-color: var(--accent-red);
+    }
   </style>
 </head>
 <body>
@@ -597,10 +677,19 @@
     <div class="h-px w-12 bg-yellow-500 opacity-60"></div>
   </div>
 
-  <!-- Dramatic tagline -->
-  <p class="fade-in-delay-3 text-2xl md:text-3xl font-black text-white tracking-tight max-w-lg">
-    "Quand le génie rencontre<br/>la gâchette"
-  </p>
+  <!-- Dramatic quote: random pick from SHAME_QUOTES, revealed after miss counter -->
+  <div class="shame-quote-block" id="shame-quote-block" aria-live="polite">
+    <!-- Geometric SVG quote mark: two rectangular blocks (modern, no serifs) -->
+    <svg class="shame-quote-deco" aria-hidden="true" viewBox="0 0 52 44" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0"  y="0" width="18" height="44" rx="2"/>
+      <rect x="26" y="0" width="18" height="44" rx="2"/>
+    </svg>
+    <p class="shame-quote-text" id="shame-quote-text"></p>
+    <hr class="shame-quote-divider" />
+    <p class="shame-quote-attribution" id="shame-quote-attribution"></p>
+    <p class="shame-quote-context" id="shame-quote-context"></p>
+    <button class="shame-quote-cycle" id="shame-quote-cycle" title="Citation suivante" aria-label="Citation suivante">↺</button>
+  </div>
 
   <!-- Scroll hint -->
   <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
@@ -1019,6 +1108,56 @@
     });
   }
 
+  /* ── Shame quotes: real Jacquelin quotes (editorial exception like GLORY.md).
+     Displayed randomly in the hero, one per page load, cycling on ↺.       */
+  const SHAME_QUOTES = [
+    {
+      text: '"I will fuck him on Sunday."',
+      context: 'À propos de Lægreid — Milan-Cortina 2026. Le dimanche en question : 4 fautes au premier debout alors qu\'il arrive en tête de la course et une 12ᵉ place finale. Et pour Lægreid... la médaille d\'argent.',
+      attribution: 'Emilien Jacquelin'
+    },
+    {
+      text: '"Today could have been a piece of art if the shooting was better. It was a fun race, but not a piece of art!"',
+      context: 'Après le bronze en poursuite — Milan-Cortina 2026.',
+      attribution: 'Emilien Jacquelin'
+    },
+    {
+      text: '"I arrived for the standing shot and I felt my left leg shaking… At times like that, there\'s not much you can do except fight."',
+      context: 'Sprint Oslo 2025 - 1/5 sur le debout',
+      attribution: 'Emilien Jacquelin'
+    },
+    {
+      text: '"Désolé de courir avec le cœur, et non avec la raison. On réglera ça sur la piste."',
+      context: 'Pokljuka 2021, après la mass start, en pleurs.',
+      attribution: 'Emilien Jacquelin'
+    },
+    {
+      text: '"Je suis dévasté, j\'y ai mis tout mon cœur."',
+      context: 'Pokljuka 2021, après la course.',
+      attribution: 'Emilien Jacquelin'
+    },
+    {
+      text: '"C\'est un peu comme si j\'essayais de tirer en ayant bu une ou deux bières."',
+      context: 'Sur l\'effet de l\'altitude à Soldier Hollow.',
+      attribution: 'Emilien Jacquelin'
+    },
+    {
+      text: '"La course, ma course en tout cas, a été à mon image : les trois quarts étaient parfaits, et sur la fin du tir debout je me suis compliqué la vie."',
+      context: 'Relais mixte — Pékin 2022.',
+      attribution: 'Emilien Jacquelin'
+    },
+    {
+      text: '"Ce sport est terrible et vous n’imaginez même pas comment derrière la carabine, c’est de l’incompréhension."',
+      context: 'Après avoir tourné 2 fois sur l\'anneau de pénalité lors du relais masculin à Oberhof en 2026.',
+      attribution: 'Emilien Jacquelin'
+    },
+    {
+      text: '"Pantani m\'a transmis le goût du panache."',
+      context: 'Arborant fièrement la boucle d\'oreille du pirate',
+      attribution: 'Emilien Jacquelin'
+    }
+  ];
+
   /* ── Glory moments: editorial data (exception to no-hardcode rule;
      narratives from GLORY.md cannot be derived from the CSV).
      CSV-derived shooting stats are looked up at runtime.         */
@@ -1290,6 +1429,39 @@
     counterEl.setAttribute('aria-label', totalMisses + ' tirs manqués');
     // Small delay so the user sees the "0" for a beat before the drama begins
     setTimeout(() => animateCounter(counterEl, totalMisses, 2200), 500);
+
+    // Reveal shame quote after counter finishes (~500ms delay + 2200ms animation)
+    initShameQuote();
+  }
+
+  /* ── Shame Quote: random Jacquelin quote revealed after miss counter ───── */
+  function initShameQuote() {
+    const block  = document.getElementById('shame-quote-block');
+    const textEl = document.getElementById('shame-quote-text');
+    const attrEl = document.getElementById('shame-quote-attribution');
+    const ctxEl  = document.getElementById('shame-quote-context');
+    const btn    = document.getElementById('shame-quote-cycle');
+
+    let currentIdx = Math.floor(Math.random() * SHAME_QUOTES.length);
+
+    function renderQuote(idx) {
+      const q = SHAME_QUOTES[idx];
+      textEl.textContent = q.text;
+      attrEl.textContent = '— ' + q.attribution;
+      ctxEl.textContent  = q.context ?? '';
+
+      // Reset and replay the fade-in animation on each cycle
+      block.classList.remove('is-visible');
+      requestAnimationFrame(() => requestAnimationFrame(() => block.classList.add('is-visible')));
+    }
+
+    btn.addEventListener('click', () => {
+      currentIdx = (currentIdx + 1) % SHAME_QUOTES.length;
+      renderQuote(currentIdx);
+    });
+
+    // Reveal after counter animation finishes (500ms start delay + 2200ms run = 2700ms)
+    setTimeout(() => renderQuote(currentIdx), 2800);
   }
 
   /* ── Feature 2: Career Stats Bar ──────────────────────────────── */
