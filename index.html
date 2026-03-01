@@ -463,6 +463,75 @@
       100% { opacity: 0;    transform: scale(1.1);  }
     }
 
+    /* ── Glory Intro Splash Screen ───────────────────────────── */
+    .glory-intro-screen {
+      position: relative;
+      min-height: 100vh;
+      background: var(--bg-page);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .glory-intro-img {
+      max-height: 85vh;
+      width: auto;
+      object-fit: contain;
+      display: block;
+      mix-blend-mode: multiply;
+    }
+    .glory-intro-title-box {
+      position: absolute;
+      bottom: 14%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ffffff;
+      padding: 0.75rem 2rem;
+      white-space: nowrap;
+      overflow: hidden; /* clips the typewriter reveal */
+    }
+    .glory-intro-title {
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      font-weight: 900;
+      font-family: Georgia, 'Times New Roman', serif;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #000000;
+      display: inline-block;
+      /* Typewriter: reveal left→right in 25 steps (one per character) */
+      clip-path: inset(0 100% 0 0);
+      animation: glory-typewriter 2s steps(25, end) 0.4s forwards,
+                 glory-cursor    0.6s step-end      0.4s 5;
+      border-right: 2px solid #000;
+    }
+    @keyframes glory-typewriter {
+      from { clip-path: inset(0 100% 0 0); }
+      to   { clip-path: inset(0 0%   0 0); }
+    }
+    @keyframes glory-cursor {
+      0%, 100% { border-right-color: #000; }
+      50%      { border-right-color: transparent; }
+    }
+    .glory-intro-scroll-hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      opacity: 0.4;
+      color: var(--text-dim);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    @media (max-width: 640px) {
+      .glory-intro-img { max-height: 70vh; }
+      .glory-intro-title-box { padding: 0.6rem 1.25rem; white-space: normal; text-align: center; }
+    }
+
     /* ─── Sound toggle button (Idea 4) ─────────────────────────── */
     .sound-toggle {
       position: fixed;
@@ -520,10 +589,13 @@
     /* ── Shame Quote Block (Feature: "The Confession") ────────────── */
     .shame-quote-block {
       position: relative;
-      max-width: 640px;
+      max-width: 940px;
       margin: 2.5rem auto 0;
-      padding: 1.25rem 2.5rem 2rem 2rem;
+      padding: 0;
       text-align: left;
+      display: flex;
+      align-items: stretch;
+      gap: 0;
       opacity: 0;
       transform: translateY(18px);
       transition: opacity 0.9s ease, transform 0.9s ease;
@@ -531,6 +603,33 @@
     .shame-quote-block.is-visible {
       opacity: 1;
       transform: translateY(0);
+    }
+    /* Image column */
+    .shame-quote-img-col {
+      flex: 0 0 320px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+    }
+    .shame-quote-img {
+      width: 320px;
+      object-fit: contain;
+      object-position: bottom center;
+      display: block;
+      filter: drop-shadow(0 0 18px rgba(239, 68, 68, 0.25));
+    }
+    /* Text column */
+    .shame-quote-text-col {
+      flex: 1;
+      position: relative;
+      padding: 1.25rem 2.5rem 2rem 1.5rem;
+    }
+    /* Mobile: stack vertically */
+    @media (max-width: 640px) {
+      .shame-quote-block { flex-direction: column; }
+      .shame-quote-img-col { flex: none; justify-content: center; }
+      .shame-quote-img { width: 180px; }
+      .shame-quote-text-col { padding: 1rem 1.5rem 2rem; }
     }
     /* Giant faded decorative opening quote */
     .shame-quote-deco {
@@ -679,16 +778,25 @@
 
   <!-- Dramatic quote: random pick from SHAME_QUOTES, revealed after miss counter -->
   <div class="shame-quote-block" id="shame-quote-block" aria-live="polite">
-    <!-- Geometric SVG quote mark: two rectangular blocks (modern, no serifs) -->
-    <svg class="shame-quote-deco" aria-hidden="true" viewBox="0 0 52 44" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0"  y="0" width="18" height="44" rx="2"/>
-      <rect x="26" y="0" width="18" height="44" rx="2"/>
-    </svg>
-    <p class="shame-quote-text" id="shame-quote-text"></p>
-    <hr class="shame-quote-divider" />
-    <p class="shame-quote-attribution" id="shame-quote-attribution"></p>
-    <p class="shame-quote-context" id="shame-quote-context"></p>
-    <button class="shame-quote-cycle" id="shame-quote-cycle" title="Citation suivante" aria-label="Citation suivante">↺</button>
+    <!-- Image column -->
+    <div class="shame-quote-img-col">
+      <img src="assets/Emilien raccroche cara.png"
+           alt="Emilien Jacquelin raccroche sa carabine"
+           class="shame-quote-img" />
+    </div>
+    <!-- Text column -->
+    <div class="shame-quote-text-col">
+      <!-- Geometric SVG quote mark: two rectangular blocks (modern, no serifs) -->
+      <svg class="shame-quote-deco" aria-hidden="true" viewBox="0 0 52 44" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0"  y="0" width="18" height="44" rx="2"/>
+        <rect x="26" y="0" width="18" height="44" rx="2"/>
+      </svg>
+      <p class="shame-quote-text" id="shame-quote-text"></p>
+      <hr class="shame-quote-divider" />
+      <p class="shame-quote-attribution" id="shame-quote-attribution"></p>
+      <p class="shame-quote-context" id="shame-quote-context"></p>
+      <button class="shame-quote-cycle" id="shame-quote-cycle" title="Citation suivante" aria-label="Citation suivante">↺</button>
+    </div>
   </div>
 
   <!-- Scroll hint -->
@@ -880,6 +988,22 @@
      HALL OF GLORY — parallel world, shown when theme = glory
      ════════════════════════════════════════════════════════════════ -->
 <div id="glory-world" style="display:none">
+
+  <!-- Glory intro splash screen -->
+  <section class="glory-intro-screen">
+    <img src="assets/emilien chut.png"
+         alt="Emilien Jacquelin — L'autre face du champion"
+         class="glory-intro-img" />
+    <div class="glory-intro-title-box">
+      <span class="glory-intro-title">L'autre face du champion</span>
+    </div>
+    <div class="glory-intro-scroll-hint">
+      <span>Défiler</span>
+      <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+      </svg>
+    </div>
+  </section>
 
   <!-- Glory Hero -->
   <section class="relative min-h-screen flex flex-col items-center justify-center text-center px-6 py-20 overflow-hidden">
