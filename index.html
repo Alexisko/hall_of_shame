@@ -1474,7 +1474,7 @@
 
       tr.innerHTML = `
         <td class="py-3 pr-6 text-sm" style="color:var(--text-dim)">${dateStr}</td>
-        <td class="py-3 pr-6 font-bold text-sm" style="color:var(--text-primary)">${r.Location || '—'}</td>
+        <td class="py-3 pr-6 font-bold text-sm" style="color:var(--text-primary)">${normalizeLocation(r.Location)}</td>
         <td class="py-3 pr-6"><span class="discipline-badge">${r.DisciplineLabel || '—'}</span></td>
         <td class="py-3 pr-6"><span class="glory-stat-badge">${compLabel}</span></td>
         <td class="py-3 text-right"><span class="${shotBadgeClass}">${shotLabel}</span></td>
@@ -1522,6 +1522,12 @@
     return '20' + s.slice(0, 2) + '-' + s.slice(2);
   }
 
+  /* ── Utility: map raw venue name to familiar city name ────────────
+     Falls back to the raw value if the venue is not in the table.  */
+  function normalizeLocation(loc) {
+    return (window.LOCATION_MAP && window.LOCATION_MAP[loc]) || loc || '—';
+  }
+
   /* ── Animated counter: counts up to TARGET over DURATION ms ── */
   function animateCounter(el, target, duration) {
     const start = performance.now();
@@ -1548,7 +1554,12 @@
       return sum + (isNaN(v) ? 0 : v);
     }, 0);
 
-    const kmTotal = (totalPenalties * 150 / 1000).toFixed(2);
+    // SR (Single Mixed Relay) uses a 75m loop; all other disciplines use 150m
+    const kmTotal = (rows.reduce((sum, r) => {
+      const penalties = parseFloat(r.total_penalties) || 0;
+      const dist = r.DisciplineId === 'SR' ? 75 : 150;
+      return sum + penalties * dist;
+    }, 0) / 1000).toFixed(2);
 
     document.getElementById('penalty-count').textContent = totalPenalties;
     document.getElementById('km-value').textContent = kmTotal + ' km';
@@ -1740,7 +1751,7 @@
       .filter(r => !isNaN(parseFloat(r.total_misses)))
       .map(r => ({
         date:       r.StartDate || '',
-        location:   r.Location  || '—',
+        location:   normalizeLocation(r.Location),
         discipline: r.DisciplineLabel || '—',
         misses:     parseFloat(r.total_misses),
         penalties:  parseFloat(r.total_penalties) || 0,
@@ -1978,17 +1989,21 @@
     observer.observe(section);
   }
 
-  /* Fetch with cache: 'no-cache' so updated CSVs are always picked up.
-     The browser still sends a conditional request (ETag/Last-Modified),
-     so no re-download occurs when the file hasn't changed.             */
-  fetch('data/penalty_loop.csv', { cache: 'no-cache' })
-    .then(function(res) { return res.text(); })
-    .then(function(text) {
-      Papa.parse(text, {
+  /* Fetch CSV and location map in parallel.
+     cache: 'no-cache' sends a conditional request (ETag/Last-Modified) so
+     updated files are picked up without always re-downloading.            */
+  Promise.all([
+    fetch('data/penalty_loop.csv', { cache: 'no-cache' }).then(function(r) { return r.text(); }),
+    fetch('data/locations.json',   { cache: 'no-cache' }).then(function(r) { return r.json(); }).catch(function() { return {}; })
+  ]).then(function(results) {
+    var csvText     = results[0];
+    window.LOCATION_MAP = results[1];
+
+    Papa.parse(csvText, {
         header: true,
-        complete: function(results) {
-          const jacquelinRows = results.data.filter(r => r.FullName === 'Emilien JACQUELIN');
-          const laegreidRows  = results.data.filter(r => r.FullName === 'Sturla Holm LAEGREID');
+        complete: function(parsed) {
+          const jacquelinRows = parsed.data.filter(r => r.FullName === 'Emilien JACQUELIN');
+          const laegreidRows  = parsed.data.filter(r => r.FullName === 'Sturla Holm LAEGREID');
           initHero(jacquelinRows);
           initStatsBar(jacquelinRows);
           initSeasonChart(jacquelinRows);
