@@ -1,0 +1,56 @@
+name: Update penalty loop data
+
+on:
+  schedule:
+    - cron: "0 8 * * 2,5"   # Tue + Fri 08:00 UTC — catches weekend race results
+  workflow_dispatch:          # manual trigger from GitHub Actions tab
+
+jobs:
+  update-csv:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "release"
+          use-public-rspm: true   # binary packages = fast install
+
+      - name: Cache R packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: r-pkgs-${{ runner.os }}-tidyverse-httr2-v1
+          restore-keys: r-pkgs-${{ runner.os }}-
+
+      - name: Install R packages
+        shell: Rscript {0}
+        run: |
+          pkgs <- c("tidyverse", "httr2")
+          missing <- pkgs[!pkgs %in% rownames(installed.packages())]
+          if (length(missing) > 0) {
+            install.packages(missing,
+              repos = "https://packagemanager.posit.co/cran/__linux__/jammy/latest")
+          }
+
+      - name: Fetch new race data
+        run: Rscript scripts/update_penalty_loop.R
+
+      - name: Commit updated CSV
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet data/penalty_loop.csv; then
+            echo "No changes — nothing to commit."
+          else
+            git add data/penalty_loop.csv
+            git commit -m "[bot] Update penalty_loop.csv with new race data"
+            git push
+          fi
