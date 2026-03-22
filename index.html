@@ -396,19 +396,111 @@
     /* ─── Medal ticker (Idea 6) ─────────────────────────────────── */
     .medal-ticker-wrap {
       width: 100%;
-      max-width: 420px;
+      max-width: 640px;
       overflow: hidden;
-      -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
-      mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+      -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+      mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
       margin-bottom: 1.75rem;
     }
     .medal-ticker {
       display: flex;
-      gap: 1.1rem;
+      gap: 1rem;
       width: max-content;
-      animation: ticker-scroll 18s linear infinite;
+      animation: ticker-scroll 80s linear infinite;
     }
-    .medal-ticker-item { font-size: 1.8rem; flex-shrink: 0; }
+    /* Figma-inspired medal card */
+    .medal-ticker-item {
+      display: inline-flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      width: 340px;
+      background: #e8e8e5;
+      border-radius: 10px;
+      padding: 0.65rem 0.9rem 0.7rem;
+      gap: 0.2rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+    }
+    /* Top zone: event label + date row, logo floated right */
+    .ti-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .ti-event-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.08rem;
+    }
+    .ti-event-label {
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #888;
+      line-height: 1.2;
+      text-align: left;
+    }
+    .ti-location {
+      font-size: 0.82rem;
+      font-style: italic;
+      font-weight: 700;
+      color: #b45309;
+      line-height: 1.2;
+      text-align: left;
+    }
+    /* Logo: IBU image or Olympic rings SVG */
+    .ti-logo {
+      flex-shrink: 0;
+      height: 32px;
+      width: auto;
+    }
+    .ti-logo-ibu {
+      height: 42px;
+      opacity: 0.80;
+    }
+    /* Separator line */
+    .ti-divider {
+      height: 1px;
+      background: rgba(0,0,0,0.10);
+      margin: 0.25rem 0 0.2rem;
+    }
+    /* Bottom zone: medal emoji + text */
+    .ti-bottom {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+    .ti-medal-emoji {
+      font-size: 3rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .ti-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      min-width: 0;
+      text-align: left;
+    }
+    .ti-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #2a2a2a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+      text-align: left;
+    }
+    .ti-discipline {
+      font-size: 0.72rem;
+      font-weight: 400;
+      color: #6b7280;
+      white-space: nowrap;
+      line-height: 1.2;
+      text-align: left;
+    }
     @keyframes ticker-scroll {
       from { transform: translateX(0); }
       to   { transform: translateX(-50%); }
@@ -1033,7 +1125,7 @@
     </p>
 
     <p class="fade-in-delay-3 text-2xl md:text-3xl font-black tracking-tight max-w-lg" style="color:var(--text-primary)">
-      "Il tire peut-être comme un pied,<br/>mais il gagne comme un dieu."
+      "Quand il n'y a pas d'émotions, ça ne m'intéresse pas."
     </p>
 
   </section>
@@ -1105,18 +1197,31 @@
   const SPEAKER_OFF = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
   const SPEAKER_ON  = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
 
-  /* Medal ticker data — editorial, ordered chronologically.
-     Includes all podium medals across WC, Worlds, Olympics.   */
+  /* SVG / image logos for ticker cards */
+  /* Olympic rings: 3 top (positions 1,3,5) + 2 bottom between them (positions 2,4) */
+  const OLYMPICS_RINGS_SVG = `<svg class="ti-logo" viewBox="0 0 63 31" xmlns="http://www.w3.org/2000/svg" aria-label="Jeux Olympiques">
+    <circle cx="11" cy="11" r="9" fill="none" stroke="#444" stroke-width="2.5"/>
+    <circle cx="31" cy="11" r="9" fill="none" stroke="#444" stroke-width="2.5"/>
+    <circle cx="51" cy="11" r="9" fill="none" stroke="#444" stroke-width="2.5"/>
+    <circle cx="21" cy="20" r="9" fill="none" stroke="#444" stroke-width="2.5"/>
+    <circle cx="41" cy="20" r="9" fill="none" stroke="#444" stroke-width="2.5"/>
+  </svg>`;
+  const IBU_LOGO_IMG = `<img class="ti-logo ti-logo-ibu" src="assets/IBU.png" alt="IBU">`;
+
+  /* Medal ticker data — Worlds + Olympics only (editorial exception).
+     CDM entries removed. Structured for richer card layout.          */
   const GLORY_TICKER_MEDALS = [
-    '🥇','🥇','🥉',   // Mondiaux 2020: Poursuite, Relais, Mass Start
-    '🥉','🥇',         // Mondiaux 2021: Sprint, Poursuite
-    '🥇',              // CDM 2021: Grand-Bornand
-    '🥈','🥈',         // JO 2022: Relais Mixte, Relais Hommes
-    '🥇',              // Mondiaux 2023: Relais
-    '🥇',              // CDM 2024: Kontiolahti Sprint
-    '🥇',              // CDM 2025: Vysocina Sprint
-    '🥇',              // Mondiaux 2025: Relais Mixte
-    '🥉','🥇',         // JO 2026: Poursuite, Relais
+    { eventType:'worlds',  date:'Fév. 2020', location:'Antholz-Anterselva', medal:'🥇', title:'Champion du monde',   discipline:'Poursuite'     },
+    { eventType:'worlds',  date:'Fév. 2020', location:'Antholz-Anterselva', medal:'🥇', title:'Champion du monde',   discipline:'Relais'         },
+    { eventType:'worlds',  date:'Fév. 2020', location:'Antholz-Anterselva', medal:'🥉', title:'Médaille de bronze',  discipline:'Mass Start'     },
+    { eventType:'worlds',  date:'Fév. 2021', location:'Pokljuka',            medal:'🥉', title:'Médaille de bronze',  discipline:'Sprint'         },
+    { eventType:'worlds',  date:'Fév. 2021', location:'Pokljuka',            medal:'🥇', title:'Champion du monde',   discipline:'Poursuite'     },
+    { eventType:'olympics',date:'Fév. 2022', location:'Pékin',               medal:'🥈', title:'Médaille d\'argent',  discipline:'Relais Mixte'   },
+    { eventType:'olympics',date:'Fév. 2022', location:'Pékin',               medal:'🥈', title:'Médaille d\'argent',  discipline:'Relais Hommes'  },
+    { eventType:'worlds',  date:'Fév. 2023', location:'Oberhof',             medal:'🥇', title:'Champion du monde',   discipline:'Relais'         },
+    { eventType:'worlds',  date:'Fév. 2025', location:'Lenzerheide',         medal:'🥇', title:'Champion du monde',   discipline:'Relais Mixte'   },
+    { eventType:'olympics',date:'Fév. 2026', location:'Milan-Cortina',       medal:'🥉', title:'Médaille de bronze',  discipline:'Poursuite'      },
+    { eventType:'olympics',date:'Fév. 2026', location:'Milan-Cortina',       medal:'🥇', title:'Champion Olympique',  discipline:'Relais'         },
   ];
 
   /* ── Restore theme from localStorage (runs before CSV loads) ───── */
@@ -1223,16 +1328,37 @@
     }
   }
 
-  /* ── Medal ticker: build from GLORY_TICKER_MEDALS ────────────── */
+  /* ── Medal ticker: Figma-inspired card ────────────────────────── */
+  function buildTickerItem(eventType, date, location, medal, title, discipline) {
+    const eventLabel = eventType === 'olympics' ? 'Jeux Olympiques' : 'Championnats du Monde IBU';
+    const logoHtml   = eventType === 'olympics' ? OLYMPICS_RINGS_SVG : IBU_LOGO_IMG;
+    return `
+      <span class="ti-top">
+        <span class="ti-event-meta">
+          <span class="ti-event-label">${eventLabel}</span>
+          <span class="ti-location">${location} · ${date}</span>
+        </span>
+        ${logoHtml}
+      </span>
+      <span class="ti-divider"></span>
+      <span class="ti-bottom">
+        <span class="ti-medal-emoji">${medal}</span>
+        <span class="ti-info">
+          <span class="ti-title">${title}</span>
+          <span class="ti-discipline">${discipline}</span>
+        </span>
+      </span>`;
+  }
+
   function buildGloryTicker() {
     const track = document.getElementById('glory-medal-track');
     if (!track) return;
-    // Double the array for a seamless infinite scroll (translateX(-50%) = 1 set width)
-    [...GLORY_TICKER_MEDALS, ...GLORY_TICKER_MEDALS].forEach(m => {
-      const span = document.createElement('span');
-      span.className = 'medal-ticker-item';
-      span.textContent = m;
-      track.appendChild(span);
+    // Double the array for seamless infinite scroll (translateX(-50%) = 1 set width)
+    [...GLORY_TICKER_MEDALS, ...GLORY_TICKER_MEDALS].forEach(({ eventType, date, location, medal, title, discipline }) => {
+      const pill = document.createElement('span');
+      pill.className = `medal-ticker-item medal-ticker-${eventType}`;
+      pill.innerHTML = buildTickerItem(eventType, date, location, medal, title, discipline);
+      track.appendChild(pill);
     });
   }
 
