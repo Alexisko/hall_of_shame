@@ -51,31 +51,31 @@
     }
 
     [data-theme="glory"] {
-      --bg:               #fafaf7;
-      --bg-card:          #f0f0ea;
-      --bg-badge:         #e0e0d8;
-      --bg-card-worst-a:  #f0ead8;
-      --bg-card-worst-b:  #f0f0ea;
+      --bg:               #f5e8d0;
+      --bg-card:          #ead9b8;
+      --bg-badge:         #d8c090;
+      --bg-card-worst-a:  #e8d0a0;
+      --bg-card-worst-b:  #ead9b8;
 
-      --text-primary:     #1a1a1a;
-      --text-dim:         #6b7280;
+      --text-primary:     #2a1500;
+      --text-dim:         #7a5a30;
 
-      --accent-red:       #d97706;
-      --accent-red-rgb:   217, 119, 6;
-      --accent-red-dark:  #92400e;
-      --accent-gold:      #d97706;
-      --accent-gold-dark: #b45309;
-      --accent-blue:      #1d4ed8;
-      --accent-blue-rgb:  29, 78, 216;
+      --accent-red:       #c07a10;
+      --accent-red-rgb:   192, 122, 16;
+      --accent-red-dark:  #7a4010;
+      --accent-gold:      #c07a10;
+      --accent-gold-dark: #6b3a0e;
+      --accent-blue:      #4a6478;
+      --accent-blue-rgb:  74, 100, 120;
 
-      --border-section:   #e0e0d8;
-      --border-card:      #d0d0c8;
-      --border-shame-row: #d0d0c8;
-      --border-shame-top: #c0c0b8;
+      --border-section:   #d4b880;
+      --border-card:      #c4a870;
+      --border-shame-row: #c4a870;
+      --border-shame-top: #b09060;
 
-      --chart-grid:       rgba(0,0,0,0.05);
-      --chart-tick:       #6b7280;
-      --chart-label:      #4b5563;
+      --chart-grid:       rgba(42, 21, 0, 0.08);
+      --chart-tick:       #7a5a30;
+      --chart-label:      #5a3a18;
     }
 
     /* ─── Base ─────────────────────────────────────────────────── */
@@ -338,9 +338,14 @@
       align-items: center;
       justify-content: center;
       font-size: 1.4rem;
+      white-space: nowrap;
       position: relative;
       z-index: 1;
       transition: background 0.4s ease, border-color 0.4s ease;
+    }
+    .glory-medal-dot--multi {
+      font-size: 1rem;
+      letter-spacing: -0.05em;
     }
     .glory-card-body {
       flex: 1;
@@ -391,12 +396,12 @@
     /* Green "clean shoot" badge — dark mode */
     .glory-stat-clean { background: rgba(34,197,94,0.12); color: #4ade80; }
     /* Green in glory (light) mode */
-    [data-theme="glory"] .glory-stat-clean { background: rgba(21,128,61,0.1); color: #15803d; }
+    [data-theme="glory"] .glory-stat-clean { background: rgba(120,90,20,0.12); color: #7a5a14; }
 
     /* ─── Medal ticker (Idea 6) ─────────────────────────────────── */
     .medal-ticker-wrap {
       width: 100%;
-      max-width: 640px;
+      max-width: min(864px, 100%);
       overflow: hidden;
       -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
       mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
@@ -408,13 +413,13 @@
       width: max-content;
       animation: ticker-scroll 80s linear infinite;
     }
-    /* Figma-inspired medal card */
+    /* Figma-inspired medal card — wider container only */
     .medal-ticker-item {
       display: inline-flex;
       flex-direction: column;
       flex-shrink: 0;
-      width: 340px;
-      background: #e8e8e5;
+      width: 367px;
+      background: var(--bg-card);
       border-radius: 10px;
       padding: 0.65rem 0.9rem 0.7rem;
       gap: 0.2rem;
@@ -437,7 +442,7 @@
       font-weight: 600;
       letter-spacing: 0.07em;
       text-transform: uppercase;
-      color: #888;
+      color: var(--text-dim);
       line-height: 1.2;
       text-align: left;
     }
@@ -445,7 +450,7 @@
       font-size: 0.82rem;
       font-style: italic;
       font-weight: 700;
-      color: #b45309;
+      color: var(--accent-red-dark);
       line-height: 1.2;
       text-align: left;
     }
@@ -486,7 +491,7 @@
     .ti-title {
       font-size: 1.05rem;
       font-weight: 800;
-      color: #2a2a2a;
+      color: var(--text-primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -496,7 +501,7 @@
     .ti-discipline {
       font-size: 0.72rem;
       font-weight: 400;
-      color: #6b7280;
+      color: var(--text-dim);
       white-space: nowrap;
       line-height: 1.2;
       text-align: left;
@@ -504,6 +509,56 @@
     @keyframes ticker-scroll {
       from { transform: translateX(0); }
       to   { transform: translateX(-50%); }
+    }
+
+    /* ─── Glory quote block (with athlete image) ─────────────────── */
+    .glory-quote-block {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      max-width: 680px;
+      margin: 0 auto 2.5rem;
+      text-align: left;
+    }
+    .glory-quote-img {
+      flex-shrink: 0;
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 50%;
+      opacity: 0.88;
+      filter: sepia(0.85) brightness(0.95);
+    }
+    .glory-quote-text-wrap {
+      flex: 1;
+    }
+    .glory-quote-text {
+      font-size: 1.25rem;
+      font-style: italic;
+      font-weight: 700;
+      line-height: 1.45;
+      color: var(--text-primary);
+      margin: 0 0 0.4rem;
+    }
+    .glory-quote-attr {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent-gold);
+      font-weight: 600;
+    }
+    /* Medals count line above ticker */
+    .glory-medal-count-line {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+    }
+    @media (max-width: 600px) {
+      .glory-quote-block { flex-direction: column; text-align: center; gap: 1.25rem; }
+      .glory-quote-img { width: 120px; height: 120px; }
+      .medal-ticker-item { width: 320px; }
     }
 
     /* ─── Clean shoot flash (Idea 3) ────────────────────────────── */
@@ -577,7 +632,7 @@
       bottom: 14%;
       left: 50%;
       transform: translateX(-50%);
-      background: #ffffff;
+      background: var(--bg);
       padding: 0.75rem 2rem;
       white-space: nowrap;
       overflow: hidden; /* clips the typewriter reveal */
@@ -588,20 +643,20 @@
       font-family: Georgia, 'Times New Roman', serif;
       text-transform: uppercase;
       letter-spacing: 0.12em;
-      color: #000000;
+      color: var(--text-primary);
       display: inline-block;
       /* Typewriter: reveal left→right in 25 steps (one per character) */
       clip-path: inset(0 100% 0 0);
       animation: glory-typewriter 2s steps(25, end) 0.4s forwards,
                  glory-cursor    0.6s step-end      0.4s 5;
-      border-right: 2px solid #000;
+      border-right: 2px solid var(--text-primary);
     }
     @keyframes glory-typewriter {
       from { clip-path: inset(0 100% 0 0); }
       to   { clip-path: inset(0 0%   0 0); }
     }
     @keyframes glory-cursor {
-      0%, 100% { border-right-color: #000; }
+      0%, 100% { border-right-color: var(--text-primary); }
       50%      { border-right-color: transparent; }
     }
     .glory-intro-scroll-hint {
@@ -652,21 +707,21 @@
     }
     [data-theme="glory"] .sound-toggle {
       display: flex;
-      background: rgba(255, 255, 255, 0.85);
-      color: #374151;
-      border-color: rgba(0, 0, 0, 0.12);
+      background: rgba(245, 232, 208, 0.92);
+      color: var(--text-primary);
+      border-color: rgba(42, 21, 0, 0.15);
     }
     [data-theme="glory"] .sound-toggle:hover {
-      background: #ffffff;
-      border-color: rgba(0, 0, 0, 0.22);
+      background: var(--bg-card);
+      border-color: rgba(42, 21, 0, 0.25);
     }
 
     /* ─── Glory mode: Tailwind color overrides ───────────────────── */
     [data-theme="glory"] .text-white             { color: var(--text-primary) !important; }
-    [data-theme="glory"] .text-gray-300          { color: #374151 !important; }
-    [data-theme="glory"] .text-gray-400          { color: #4b5563 !important; }
-    [data-theme="glory"] .text-gray-500          { color: #6b7280 !important; }
-    [data-theme="glory"] .text-gray-600          { color: #6b7280 !important; }
+    [data-theme="glory"] .text-gray-300          { color: #5a3a18 !important; }
+    [data-theme="glory"] .text-gray-400          { color: #7a5a30 !important; }
+    [data-theme="glory"] .text-gray-500          { color: #8a6840 !important; }
+    [data-theme="glory"] .text-gray-600          { color: #7a5a30 !important; }
     [data-theme="glory"] .text-red-500           { color: var(--accent-red) !important; }
     [data-theme="glory"] .text-red-400           { color: var(--accent-red) !important; }
     [data-theme="glory"] .text-red-600           { color: var(--accent-red-dark) !important; }
@@ -786,6 +841,54 @@
     .shame-quote-cycle:hover {
       color: var(--accent-red);
       border-color: var(--accent-red);
+    }
+
+    /* ── Glory Podium ─────────────────────────────────────────── */
+    /* ── Podium: horizontal bars ──────────────────────────────── */
+    .podium-wrap {
+      padding: 0 1.5rem 2.5rem;
+    }
+    .podium-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+    .podium-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .podium-row-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      width: 2rem;
+      flex-shrink: 0;
+      text-align: right;
+    }
+    .podium-bar-track {
+      flex: 1;
+      height: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .podium-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(to right, #7a4520, #c4956a);
+      /* transition set by JS to allow instant reset on toggle */
+    }
+    .podium-count {
+      font-size: 1.15rem;
+      font-weight: 900;
+      font-family: Arial Black, sans-serif;
+      color: var(--text-primary);
+      width: 2.5rem;
+      text-align: left;
+      flex-shrink: 0;
+      line-height: 1;
     }
   </style>
 </head>
@@ -1098,7 +1201,7 @@
   </section>
 
   <!-- Glory Hero -->
-  <section class="relative min-h-screen flex flex-col items-center justify-center text-center px-6 py-20 overflow-hidden">
+  <section class="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-20 pb-6 overflow-hidden">
     <!-- Warm golden radial glow -->
     <div class="absolute inset-0 pointer-events-none"
       style="background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(var(--accent-red-rgb), 0.12) 0%, transparent 70%);"></div>
@@ -1106,11 +1209,6 @@
     <p class="fade-in text-xs uppercase tracking-[0.3em] mb-3" style="color:var(--accent-gold)">
       Hall of Glory — Emilien Jacquelin
     </p>
-
-    <!-- Medal ticker (Idea 6) — built by JS from GLORY_MOMENTS -->
-    <div class="medal-ticker-wrap fade-in">
-      <div class="medal-ticker" id="glory-medal-track"></div>
-    </div>
 
     <!-- Animated win counter (computed from CSV) -->
     <div class="relative inline-block mb-6">
@@ -1124,11 +1222,44 @@
       dont — victoires individuelles
     </p>
 
-    <p class="fade-in-delay-3 text-2xl md:text-3xl font-black tracking-tight max-w-lg" style="color:var(--text-primary)">
-      "Quand il n'y a pas d'émotions, ça ne m'intéresse pas."
-    </p>
+    <!-- Quote + athlete image -->
+    <div class="glory-quote-block fade-in-delay-3">
+      <img src="assets/Emilien medal.png" alt="Emilien Jacquelin" class="glory-quote-img" />
+      <div class="glory-quote-text-wrap">
+        <p class="glory-quote-text">"Quand il n'y a pas d'émotions, ça ne m'intéresse pas."</p>
+        <p class="glory-quote-attr">Emilien Jacquelin</p>
+      </div>
+    </div>
+
+    <!-- Medal count summary + Ticker — built by JS from GLORY_TICKER_MEDALS -->
+    <p class="glory-medal-count-line" id="glory-medal-count-line"></p>
+    <div class="medal-ticker-wrap fade-in">
+      <div class="medal-ticker" id="glory-medal-track"></div>
+    </div>
 
   </section>
+
+  <!-- ── Horizontal bars: individual podium finishes ──────── -->
+  <div class="podium-wrap max-w-lg mx-auto text-center" id="glory-podium-stage">
+    <p class="glory-medal-count-line" id="podium-stats"></p>
+    <div class="podium-bars">
+      <div class="podium-row">
+        <span class="podium-row-label">1er</span>
+        <div class="podium-bar-track"><div class="podium-bar" id="podium-bar-1"></div></div>
+        <span class="podium-count" id="podium-count-1">0</span>
+      </div>
+      <div class="podium-row">
+        <span class="podium-row-label">2e</span>
+        <div class="podium-bar-track"><div class="podium-bar" id="podium-bar-2"></div></div>
+        <span class="podium-count" id="podium-count-2">0</span>
+      </div>
+      <div class="podium-row">
+        <span class="podium-row-label">3e</span>
+        <div class="podium-bar-track"><div class="podium-bar" id="podium-bar-3"></div></div>
+        <span class="podium-count" id="podium-count-3">0</span>
+      </div>
+    </div>
+  </div>
 
   <!-- Glory Timeline -->
   <section class="px-6 py-16" style="border-top:1px solid var(--border-section)">
@@ -1151,7 +1282,7 @@
       <div class="mb-8 text-center">
         <p class="text-xs uppercase tracking-[0.3em] mb-2" style="color:var(--text-dim)">Le bilan individuel</p>
         <h2 class="text-2xl md:text-3xl font-black" style="color:var(--text-primary)">Victoires</h2>
-        <p class="text-sm mt-3" style="color:var(--text-dim)">5 victoires mais surtout 2 titres de champion du monde.</p>
+        <p class="text-sm mt-3" id="glory-victories-subtitle" style="color:var(--text-dim)"></p>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full">
@@ -1171,6 +1302,7 @@
       </div>
     </div>
   </section>
+
 
 </div><!-- /glory-world -->
 
@@ -1211,17 +1343,20 @@
   /* Medal ticker data — Worlds + Olympics only (editorial exception).
      CDM entries removed. Structured for richer card layout.          */
   const GLORY_TICKER_MEDALS = [
-    { eventType:'worlds',  date:'Fév. 2020', location:'Antholz-Anterselva', medal:'🥇', title:'Champion du monde',   discipline:'Poursuite'     },
-    { eventType:'worlds',  date:'Fév. 2020', location:'Antholz-Anterselva', medal:'🥇', title:'Champion du monde',   discipline:'Relais'         },
-    { eventType:'worlds',  date:'Fév. 2020', location:'Antholz-Anterselva', medal:'🥉', title:'Médaille de bronze',  discipline:'Mass Start'     },
-    { eventType:'worlds',  date:'Fév. 2021', location:'Pokljuka',            medal:'🥉', title:'Médaille de bronze',  discipline:'Sprint'         },
-    { eventType:'worlds',  date:'Fév. 2021', location:'Pokljuka',            medal:'🥇', title:'Champion du monde',   discipline:'Poursuite'     },
-    { eventType:'olympics',date:'Fév. 2022', location:'Pékin',               medal:'🥈', title:'Médaille d\'argent',  discipline:'Relais Mixte'   },
-    { eventType:'olympics',date:'Fév. 2022', location:'Pékin',               medal:'🥈', title:'Médaille d\'argent',  discipline:'Relais Hommes'  },
-    { eventType:'worlds',  date:'Fév. 2023', location:'Oberhof',             medal:'🥇', title:'Champion du monde',   discipline:'Relais'         },
-    { eventType:'worlds',  date:'Fév. 2025', location:'Lenzerheide',         medal:'🥇', title:'Champion du monde',   discipline:'Relais Mixte'   },
-    { eventType:'olympics',date:'Fév. 2026', location:'Milan-Cortina',       medal:'🥉', title:'Médaille de bronze',  discipline:'Poursuite'      },
-    { eventType:'olympics',date:'Fév. 2026', location:'Milan-Cortina',       medal:'🥇', title:'Champion Olympique',  discipline:'Relais'         },
+    { eventType:'worlds',  date:'2020', location:'Antholz-Anterselva', medal:'🥇', title:'Champion du monde',   discipline:'Poursuite'           },
+    { eventType:'worlds',  date:'2020', location:'Antholz-Anterselva', medal:'🥇', title:'Champion du monde',   discipline:'Relais homme'         },
+    { eventType:'worlds',  date:'2020', location:'Antholz-Anterselva', medal:'🥉', title:'Médaille de bronze',  discipline:'Mass Start'           },
+    { eventType:'worlds',  date:'2020', location:'Antholz-Anterselva', medal:'🥉', title:'Médaille de bronze',  discipline:'Relais mixte simple'  },
+    { eventType:'worlds',  date:'2021', location:'Pokljuka',            medal:'🥉', title:'Médaille de bronze',  discipline:'Sprint'               },
+    { eventType:'worlds',  date:'2021', location:'Pokljuka',            medal:'🥇', title:'Champion du monde',   discipline:'Poursuite'            },
+    { eventType:'olympics',date:'2022', location:'Pékin',               medal:'🥈', title:'Médaille d\'argent',  discipline:'Relais Mixte'         },
+    { eventType:'olympics',date:'2022', location:'Pékin',               medal:'🥈', title:'Médaille d\'argent',  discipline:'Relais Hommes'        },
+    { eventType:'worlds',  date:'2023', location:'Oberhof',             medal:'🥇', title:'Champion du monde',   discipline:'Relais Hommes'        },
+    { eventType:'worlds',  date:'2023', location:'Oberhof',             medal:'🥉', title:'Médaille de bronze',  discipline:'Relais Mixte'         },
+    { eventType:'worlds',  date:'2024', location:'Nové Město',          medal:'🥉', title:'Médaille de bronze',  discipline:'Relais Hommes'        },
+    { eventType:'worlds',  date:'2025', location:'Lenzerheide',         medal:'🥇', title:'Champion du monde',   discipline:'Relais Mixte'         },
+    { eventType:'olympics',date:'2026', location:'Milan-Cortina',       medal:'🥉', title:'Médaille de bronze',  discipline:'Poursuite'            },
+    { eventType:'olympics',date:'2026', location:'Milan-Cortina',       medal:'🥇', title:'Champion Olympique',  discipline:'Relais'               },
   ];
 
   /* ── Restore theme from localStorage (runs before CSV loads) ───── */
@@ -1530,8 +1665,9 @@
 
       const li = document.createElement('li');
       li.className = 'glory-card';
+      const multiMedal = [...m.medal].length > 1 ? ' glory-medal-dot--multi' : '';
       li.innerHTML = `
-        <div class="glory-medal-dot" aria-hidden="true">${m.medal}</div>
+        <div class="glory-medal-dot${multiMedal}" aria-hidden="true">${m.medal}</div>
         <div class="glory-card-body">
           ${flashHtml}
           <div class="glory-card-meta">
@@ -1623,6 +1759,25 @@
         `dont ${indivWins} victoire${indivWins !== 1 ? 's' : ''} individuelle${indivWins !== 1 ? 's' : ''}`;
     }
 
+    // Populate victories table subtitle (data-driven)
+    const worldWins  = jacquelinRows.filter(r => parseInt(r.RankInt) === 1 && r.IsRelay !== 'TRUE'
+      && r.RaceId && r.RaceId.includes('CH__')).length;
+    const subtitleEl = document.getElementById('glory-victories-subtitle');
+    if (subtitleEl) {
+      subtitleEl.textContent =
+        `${indivWins} victoires individuelles, dont ${worldWins} titre${worldWins !== 1 ? 's' : ''} de champion du monde.`;
+    }
+
+    // Medal count line above ticker (derived from editorial GLORY_TICKER_MEDALS)
+    const ogMedals     = GLORY_TICKER_MEDALS.filter(m => m.eventType === 'olympics').length;
+    const worldsMedals = GLORY_TICKER_MEDALS.filter(m => m.eventType === 'worlds').length;
+    const totalMedals  = GLORY_TICKER_MEDALS.length;
+    const countEl = document.getElementById('glory-medal-count-line');
+    if (countEl) {
+      countEl.textContent =
+        `${totalMedals} médailles internationales · ${worldsMedals} aux Mondiaux · ${ogMedals} aux Jeux Olympiques`;
+    }
+
     // Build date+discipline lookup map for timeline cards
     const raceLookup = {};
     jacquelinRows.forEach(r => {
@@ -1634,11 +1789,73 @@
     buildGloryTicker();
     buildGloryCards(raceLookup);
     buildGloryVictoriesTable(jacquelinRows);
+    initGloryPodium(jacquelinRows);
 
     // If glory world was restored from localStorage, animate counter now
     if (document.getElementById('glory-world').style.display === 'block') {
       animateGloryCounter();
     }
+  }
+
+  /* ── Horizontal bar chart: podium finishes ─────────────────── */
+  function initGloryPodium(rows) {
+    const stage = document.getElementById('glory-podium-stage');
+    if (!stage) return;
+
+    // Individual races only
+    const indivRows = rows.filter(r => r.IsRelay !== 'TRUE');
+    const counts = {
+      1: indivRows.filter(r => parseInt(r.RankInt) === 1).length,
+      2: indivRows.filter(r => parseInt(r.RankInt) === 2).length,
+      3: indivRows.filter(r => parseInt(r.RankInt) === 3).length
+    };
+    const totalIndiv = counts[1] + counts[2] + counts[3];
+
+    const statsEl = document.getElementById('podium-stats');
+    if (statsEl) {
+      statsEl.textContent = `${totalIndiv} podiums en individuel`;
+    }
+
+    // Bar width as % of track, proportional to max count
+    const mx = Math.max(counts[1], counts[2], counts[3]);
+    function barPct(rank) {
+      return mx ? Math.round((counts[rank] / mx) * 100) : 0;
+    }
+
+    // Count number up from 0 → target over `duration` ms (ease-out quad)
+    function countUp(rank, duration) {
+      const el = document.getElementById(`podium-count-${rank}`);
+      if (!el) return;
+      const target = counts[rank];
+      const start  = performance.now();
+      (function step(now) {
+        const t = Math.min((now - start) / duration, 1);
+        el.textContent = Math.round((1 - (1 - t) * (1 - t)) * target);
+        if (t < 1) requestAnimationFrame(step);
+      })(start);
+    }
+
+    // Same pixel speed: longest bar = 2700ms, shorter bars proportionally less
+    function animateBars() {
+      [1, 2, 3].forEach(rank => {
+        const bar = document.getElementById(`podium-bar-${rank}`);
+        if (!bar) return;
+        const pct      = barPct(rank);
+        const duration = Math.round((pct / 100) * 2700);
+        bar.style.transition = `width ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+        bar.style.width = pct + '%';
+        countUp(rank, duration);
+      });
+    }
+
+    // Scroll-triggered entry
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries[0].isIntersecting) return;
+      observer.disconnect();
+      animateBars();
+    }, { threshold: 0.4 });
+
+    observer.observe(stage);
   }
 
   /* ── Utility: convert season code to readable label ──────────────
