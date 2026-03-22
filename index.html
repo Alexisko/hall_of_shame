@@ -1420,6 +1420,13 @@
         missesEl.style.display = 'none';
         gloryEl.style.display  = 'block';
         btn.innerHTML = MOON_ICON;
+        // Recolor season chart bars to match glory theme
+        if (seasonChartInst) {
+          const c = getCSSVar('--accent-red-dark');
+          seasonChartInst.data.datasets[0].backgroundColor = seasonChartInst.data.datasets[0].backgroundColor.map(() => c);
+          seasonChartInst.data.datasets[0].borderColor      = seasonChartInst.data.datasets[0].borderColor.map(() => c);
+          seasonChartInst.update('none');
+        }
         animateGloryCounter();
         // Auto-play La Marseillaise (button click = valid user gesture)
         const audio  = document.getElementById('glory-audio');
@@ -2023,10 +2030,6 @@
       return d.shots > 0 ? ((d.misses / d.shots) * 100).toFixed(1) + '%' : '—';
     });
 
-    // Uniform bar color — read from CSS variable so it respects active theme
-    const barColor = getCSSVar('--accent-red-dark');
-    const colors = values.map(() => barColor);
-
     // Populate the total label above the chart
     document.getElementById('season-total').textContent = values.reduce((a, b) => a + b, 0);
 
@@ -2035,6 +2038,10 @@
     const observer = new IntersectionObserver(entries => {
       if (!entries[0].isIntersecting) return;
       observer.disconnect(); // fire once
+
+      // Read bar color at chart-creation time so it reflects whichever theme is active
+      const barColor = getCSSVar('--accent-red-dark');
+      const colors = values.map(() => barColor);
 
       seasonChartInst = new Chart(document.getElementById('season-chart-canvas'), {
         type: 'bar',
